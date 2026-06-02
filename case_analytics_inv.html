@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Investigator Analytics</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    background:#f2f2f2;
+    text-align:center;
+}
+
+h2{
+    color:navy;
+    margin-top:30px;
+}
+
+.container{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:20px;
+    margin-top:40px;
+}
+
+.card{
+    width:220px;
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0px 4px 10px rgba(0,0,0,0.2);
+}
+
+.card h3{
+    color:navy;
+    margin-bottom:15px;
+}
+
+.card p{
+    font-size:30px;
+    font-weight:bold;
+    color:darkred;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>Investigator Analytics Dashboard</h2>
+
+<div class="container">
+
+    <div class="card">
+        <h3>Total Assigned Cases</h3>
+        <p id="totalCases">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Pending Cases</h3>
+        <p id="pendingCases">0</p>
+    </div>
+
+    <div class="card">
+        <h3>In Progress Cases</h3>
+        <p id="progressCases">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Resolved Cases</h3>
+        <p id="resolvedCases">0</p>
+    </div>
+
+</div>
+
+<script>
+
+let token = localStorage.getItem("token");
+
+let investigator_id =
+localStorage.getItem("investigator_id");
+
+if(!token || !investigator_id){
+
+    alert("Please Login First");
+
+    window.location.href =
+    "Investigator_login_page.html";
+
+}
+
+fetch(
+`http://localhost:3000/investigatorAnalytics?id=${investigator_id}`,
+
+{
+    headers:{
+        "Authorization":"Bearer " + token
+    }
+})
+
+.then(res => res.json())
+
+.then(data => {
+
+    console.log(data);
+
+    document.getElementById("totalCases").innerHTML =
+    data.totalCases;
+
+    document.getElementById("pendingCases").innerHTML =
+    data.pendingCases;
+
+    document.getElementById("progressCases").innerHTML =
+    data.progressCases;
+
+    document.getElementById("resolvedCases").innerHTML =
+    data.resolvedCases;
+
+})
+
+.catch(err => {
+
+    console.log(err);
+
+    alert("Error loading analytics");
+
+});
+
+</script>
+
+</body>
+</html>

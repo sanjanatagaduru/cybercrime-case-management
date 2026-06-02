@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    text-align: center;
+}
+
+h1{
+    color: navy;
+    margin-top: 30px;
+}
+
+h2{
+    color: black;
+}
+
+#dashboardBox{
+    background-color: white;
+    width: 400px;
+    margin: auto;
+    padding: 25px;
+    border: 1px solid gray;
+    margin-top: 20px;
+    text-align: center;
+}
+
+ul{
+    list-style-type: none;
+    padding: 0;
+}
+
+li{
+    margin: 12px 0;
+}
+
+a{
+    text-decoration: none;
+    color: white;
+    background-color: navy;
+    padding: 12px;
+    display: block;
+    width: 250px;
+    margin: auto;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+}
+
+a:hover{
+    background-color: darkblue;
+}
+
+.backLink{
+    display: inline-block;
+    margin-top: 20px;
+    text-decoration: none;
+    color: darkblue;
+    font-weight: bold;
+}
+
+.backLink:hover{
+    text-decoration: underline;
+}
+
+#monitorBox{
+    background-color: #e6f0ff;
+    border: 1px solid #99ccff;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 5px;
+    text-align: left;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.monitorItem{
+    margin: 8px 0;
+    font-weight: bold;
+    color: #333;
+}
+</style>
+
+<script>
+// Redirect if admin not logged in
+window.onload = function(){
+    if(localStorage.getItem("adminLoggedIn") !== "true"){
+        alert("Please login as admin first!");
+        window.location.href = "admin_login.html";
+    }
+
+    loadMonitorData();
+}
+
+// Logout function
+function adminLogout(){
+    localStorage.removeItem("adminLoggedIn");
+    window.location.href = "admin_login.html";
+}
+
+// Monitor System: load live activity
+function loadMonitorData(){
+    let monitorBox = document.getElementById("monitorBox");
+
+    // Example data from localStorage
+    let usersCount = JSON.parse(localStorage.getItem("allUsers"))?.length || 0;
+    let investigatorsCount = JSON.parse(localStorage.getItem("allInvestigators"))?.length || 0;
+    let complaintsCount = JSON.parse(localStorage.getItem("allComplaints"))?.length || 0;
+
+    monitorBox.innerHTML = `
+        <div class="monitorItem">Total Users Registered: ${usersCount}</div>
+        <div class="monitorItem">Total Investigators: ${investigatorsCount}</div>
+        <div class="monitorItem">Total Complaints Filed: ${complaintsCount}</div>
+    `;
+}
+</script>
+
+</head>
+
+<body>
+
+<h1>Cybercrime Case Management Portal</h1>
+<h2>Admin Dashboard</h2>
+
+<div id="dashboardBox">
+
+<ul>
+    <li><a href="admin_view _compliant.html">View All Complaints</a></li>
+    <li><a href="admin_esculation_page.html">Escalate Complaints</a></li>
+    <li><a href="admin_user.html">View All Users</a></li>
+    <li><a href="view_all_investigators.html">View All Investigators</a></li>
+    <li><a href="admin_view_analytics.html">View Case Statistics</a></li>
+    <li><a href="admin._logout.html" onclick="adminLogout()">Logout</a></li>
+</ul>
+
+</div>
+
+<!-- Monitor System -->
+<br>
+
+<a href="index.html">Back to Home Page</a>
+</body>
+</html>

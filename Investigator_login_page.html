@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Investigator Login</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    text-align: center;
+}
+
+form{
+    background-color: white;
+    width: 320px;
+    margin: auto;
+    padding: 25px;
+    border: 1px solid gray;
+}
+
+input{
+    width: 85%;
+    padding: 6px;
+    margin-bottom: 10px;
+}
+
+button{
+    background-color: darkblue;
+    color: white;
+    border: none;
+    padding: 8px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+#message{
+    font-weight: bold;
+}
+</style>
+
+<script>
+
+let idVerified = false;
+let passwordVerified = false;
+function getInvestigatorID(){
+    return document.getElementById("inv_id").value.trim().toUpperCase();
+}
+function verifyID(){
+
+    let investigatorID = getInvestigatorID();
+
+    fetch("http://localhost:3000/verifyInvID", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+            investigator_id: investigatorID
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.status === "valid"){
+            idVerified = true;
+
+            document.getElementById("message").innerHTML = "ID Verified";
+            document.getElementById("message").style.color = "green";
+
+            localStorage.setItem("investigator_id", investigatorID);
+
+            document.getElementById("password").disabled = false;
+
+        } else {
+            idVerified = false;
+
+            document.getElementById("message").innerHTML = "Invalid ID";
+            document.getElementById("message").style.color = "red";
+
+            document.getElementById("password").disabled = true;
+        }
+    });
+}
+
+
+function verifyPassword(){
+
+    let investigatorID = getInvestigatorID();
+    let password = document.getElementById("password").value;
+
+    console.log("Sending:", { investigatorID, password });
+
+    fetch("http://localhost:3000/verifyPassword", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+            investigator_id: investigatorID,
+            password: password
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        console.log("Response:", data);
+
+        if(data.status === "correct"){
+            passwordVerified = true;
+
+            document.getElementById("message").innerHTML = "Password Correct";
+            document.getElementById("message").style.color = "green";
+
+        } else {
+            passwordVerified = false;
+
+            document.getElementById("message").innerHTML =
+            data.status === "wrong_password"
+                ? "Wrong Password"
+                : "Invalid Investigator ID";
+
+            document.getElementById("message").style.color = "red";
+        }
+
+    });
+}
+
+//  FINAL LOGIN
+function loginInvestigator(event){
+    event.preventDefault();
+
+    if(!idVerified){
+        alert("Verify ID first");
+        return;
+    }
+
+    if(!passwordVerified){
+        alert("Verify password first");
+        return;
+    }
+
+   /* GENERATE JWT LOGIN SESSION */
+
+let investigatorID =
+document.getElementById("inv_id").value;
+
+let password =
+document.getElementById("password").value;
+
+fetch("http://localhost:3000/investigatorLogin", {
+
+    method: "POST",
+
+    headers: {
+
+        "Content-Type":"application/json"
+
+    },
+
+    body: JSON.stringify({
+
+        investigator_id: investigatorID,
+
+        password: password
+
+    })
+
+})
+
+.then(res => res.json())
+
+.then(data => {
+
+    if(data.success){
+
+        /* SAVE JWT TOKEN */
+
+        localStorage.setItem(
+
+            "token",
+
+            data.token
+
+        );
+
+        localStorage.setItem(
+
+            "investigator_id",
+
+            investigatorID
+
+        );
+
+        alert("Login Successful");
+
+        window.location.href =
+        "InvestigatorDashboard.html";
+
+    }
+
+    else{
+
+        alert(data.message);
+
+    }
+
+});
+
+}
+
+
+
+function openForgotPassword(){
+
+window.location.href =
+"Investigator_update_profile.html";
+
+}
+
+</script>
+
+</head>
+
+<body>
+
+<h2>Investigator Login</h2>
+
+<form onsubmit="loginInvestigator(event)">
+
+    <input type="text" id="inv_id" placeholder="Investigator ID" required>
+    <button type="button" onclick="verifyID()" requi>Verify ID</button>
+
+    <input type="password" id="password" placeholder="Password" required disabled>
+    <button type="button" onclick="verifyPassword()">Verify Password</button>
+
+    <br><br>
+    <button type="submit">Login</button>
+
+</form>
+
+<p id="message"></p>
+<br><br>
+<button onclick="openForgotPassword()" >
+Forgot Password
+</button>
+
+</body>
+</html>

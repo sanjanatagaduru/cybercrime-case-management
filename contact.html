@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Contact Us</title>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f2f2f2;
+    text-align:center;
+}
+
+.container{
+    background:white;
+    width:400px;
+    margin:auto;
+    padding:20px;
+    margin-top:30px;
+    border-radius:10px;
+}
+
+input, textarea{
+    width:90%;
+    padding:8px;
+    margin:10px;
+}
+
+button{
+    padding:10px;
+    background:navy;
+    color:white;
+    border:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>Contact Us</h2>
+
+<p><b>Cybercrime Helpline:</b> 1930</p>
+<p><b>Email:</b> support@cybersystem.com</p>
+<p><b>Phone:</b> +91 98765 43210</p>
+
+<form onsubmit="showMsg(); return false;">
+<input type="text" placeholder="Your Name" required><br>
+<input type="email" placeholder="Your Email" required><br>
+<textarea placeholder="Your Message" required></textarea><br>
+<button type="submit">Send Message</button>
+</form>
+
+</div>
+
+<script>
+function showMsg(){
+    alert("Message sent successfully!");
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Update Profile</title>
+
+<style>
+
+body{
+font-family: Arial;
+background-color:#f2f2f2;
+text-align:center;
+}
+
+form{
+background:white;
+width:400px;
+margin:auto;
+padding:20px;
+border:1px solid gray;
+text-align:left;
+}
+
+input{
+width:95%;
+padding:8px;
+margin-top:5px;
+margin-bottom:10px;
+}
+
+button{
+background:navy;
+color:white;
+padding:8px 15px;
+border:none;
+cursor:pointer;
+margin-top:10px;
+}
+
+button:hover{
+background:darkblue;
+}
+
+#passMsg{
+font-size:14px;
+font-weight:bold;
+}
+a{
+    display:inline-block;
+    margin-top:20px;
+    padding:10px 20px;
+    background:darkblue;
+    color:white;
+    text-decoration:none;
+}
+
+</style>
+
+<script>
+
+let verifiedEmail = "";
+
+/* SEND OTP */
+function sendOTP(){
+
+let email = document.getElementById("email").value;
+
+fetch("http://localhost:3000/sendemailOTP",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({email})
+})
+.then(res=>res.json())
+.then(data=>{
+alert(data.message);
+});
+
+}
+
+/* VERIFY OTP */
+function verifyOTP(){
+
+let email = document.getElementById("email").value;
+let otp = document.getElementById("otp").value;
+
+fetch("http://localhost:3000/verifyemailOTP",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({email,otp})
+})
+.then(res=>res.json())
+.then(data=>{
+
+if(data.success){
+
+alert("OTP Verified Successfully");
+
+verifiedEmail = email;
+
+/* FETCH USER DATA */
+fetch("http://localhost:3000/getUserByEmail?email=" + email)
+.then(res=>res.json())
+.then(user=>{
+
+document.getElementById("userid").value = user.user_id;
+document.getElementById("name").value = user.fullname;
+document.getElementById("mobile").value = user.mobile;
+document.getElementById("city").value = user.city;
+document.getElementById("state").value = user.state;
+
+/* ENABLE FIELDS */
+document.getElementById("mobile").disabled = false;
+document.getElementById("city").disabled = false;
+document.getElementById("state").disabled = false;
+document.getElementById("password").disabled = false;
+document.getElementById("confirmPassword").disabled = false;
+document.getElementById("updateBtn").disabled = false;
+
+});
+
+}
+else{
+alert("Invalid OTP");
+}
+
+});
+
+}
+
+/* UPDATE PROFILE */
+function updateProfile(){
+
+let mobile = document.getElementById("mobile").value.trim();
+let city = document.getElementById("city").value.trim();
+let state = document.getElementById("state").value.trim();
+
+let password =
+document.getElementById("password").value.trim();
+
+let confirmPassword =
+document.getElementById("confirmPassword").value.trim();
+
+let msg = document.getElementById("passMsg");
+
+/* MOBILE VALIDATION */
+let mobileRegex = /^[0-9]{10}$/;
+
+if(!mobileRegex.test(mobile)){
+msg.style.color = "red";
+msg.innerHTML = "Mobile number must be 10 digits";
+return;
+}
+
+/* PASSWORD VALIDATION */
+let regex =
+/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%&*])[A-Za-z\d@#$%&*]{8,}$/;
+
+if(!regex.test(password)){
+
+msg.style.color = "red";
+
+msg.innerHTML =
+"Password must contain uppercase, lowercase, number, special character and minimum 8 characters";
+
+return;
+
+}
+
+/* PASSWORD MATCH */
+if(password !== confirmPassword){
+
+msg.style.color = "red";
+msg.innerHTML = "Passwords do not match";
+return;
+
+}
+
+msg.style.color = "green";
+msg.innerHTML = "Password Verified Successfully";
+
+/* UPDATE DATABASE */
+fetch("http://localhost:3000/updateProfileSecure",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+email:verifiedEmail,
+mobile:mobile,
+city:city,
+state:state,
+password:password
+})
+
+})
+.then(res=>res.json())
+.then(data=>{
+
+alert(data.message);
+
+});
+
+}
+
+</script>
+
+</head>
+
+<body>
+
+<h2> User Update Profile</h2>
+
+<form onsubmit="event.preventDefault(); updateProfile();">
+
+<label>Email</label>
+<input type="email" id="email" required>
+
+<button type="button" onclick="sendOTP()">
+Send OTP
+</button>
+
+<br><br>
+
+<label>Enter OTP</label>
+<input type="text" id="otp" required>
+
+<button type="button" onclick="verifyOTP()">
+Verify OTP
+</button>
+
+<br><br>
+
+<label>User ID</label>
+<input type="text" id="userid" disabled>
+
+<label>Name</label>
+<input type="text" id="name" disabled>
+
+<label>Mobile</label>
+<input type="text" id="mobile" disabled>
+
+<label>City</label>
+<input type="text" id="city" disabled>
+
+<label>State</label>
+<input type="text" id="state" disabled>
+
+<label>New Password</label>
+<input type="password" id="password" disabled>
+
+<label>Confirm Password</label>
+<input type="password" id="confirmPassword" disabled>
+
+<p id="passMsg"></p>
+
+<button type="submit" id="updateBtn" disabled>
+Update Profile
+</button>
+
+</form>
+
+<br>
+
+<a href="user_dashboard.html">
+Back to Dashboard
+</a>
+
+</body>
+</html>

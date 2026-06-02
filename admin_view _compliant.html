@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+
+<style>
+body{
+    font-family: Arial;
+    text-align: center;
+    background:#f2f2f2;
+    zoom:50%;
+}
+
+/* Search Bar */
+.search-box{
+    margin:20px;
+}
+
+input{
+    padding:10px;
+    width:250px;
+    border:1px solid gray;
+    border-radius:5px;
+}
+
+button{
+    padding:10px 15px;
+    background:navy;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:darkblue;
+}
+
+
+.table-container {
+    width: 98%;
+    margin: 20px auto;
+    overflow-x: auto; /* Enables horizontal scroll */
+    border: 1px solid #ccc;
+    background: white;
+}
+
+table {
+    width: 100%;
+    min-width: 1200px; /* Forces the table to be wide enough to trigger scrolling */
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid gray;
+    padding: 12px;
+    text-align: center;
+    white-space: nowrap; /* Prevents text from wrapping, making the table wider */
+}
+
+tr:hover{
+    background:#f9f9f9;
+}
+.scroll-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.scroll-item {
+  flex: 0 0 auto; /* Keeps items at their intended width */
+  width: 200px;
+}
+.assign-btn{
+    background:#0a8f08;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    display:block;        /* makes it vertical */
+    margin:12px auto;     /* spacing between buttons */
+    width:110px;
+    font-size:15px;
+    font-weight:bold;
+    transition:0.3s;
+}
+
+.assign-btn:hover{
+    background:#066d06;
+}
+.table-container{
+    width:95%;
+    margin:auto;
+    overflow-x:auto;   /*enables horizontal scroll */
+}
+.filter-bar{
+    background: navy;
+    padding:15px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+}
+
+.filter-bar input,
+.filter-bar select{
+    padding:8px;
+    border-radius:5px;
+    border:none;
+}
+
+.filter-bar button{
+    background:white;
+    color:navy;
+    font-weight:bold;
+}
+.table-container::-webkit-scrollbar{
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-thumb{
+    background: #1a237e;
+    border-radius: 10px;
+}
+</style>
+
+<script>
+
+let token = localStorage.getItem("token");
+
+/* CHECK ADMIN LOGIN */
+if(!token){
+    alert("Admin Login Required");
+    window.location.href = "admin_login.html";
+}
+
+/* LOAD COMPLAINTS */
+function loadComplaints(){
+
+    const params = new URLSearchParams(window.location.search);
+
+    let user_id = params.get("user_id");
+    let investigator_id = params.get("investigator_id");
+
+    let url = "http://localhost:3000/allComplaints";
+
+    if(user_id){
+        url =
+        "http://localhost:3000/filterComplaints?user="
+        + encodeURIComponent(user_id);
+    }
+    
+
+    fetch(url,{
+
+        method:"GET",
+
+        headers:{
+            "Authorization":"Bearer " + token
+        }
+
+    })
+
+    .then(async res => {
+
+        if(!res.ok){
+
+            let err = await res.json();
+
+            throw new Error(err.message);
+
+        }
+
+        return res.json();
+
+    })
+
+    .then(data => {
+
+        console.log(data);
+
+        let rows = "";
+
+        if(data.length === 0){
+
+            rows =
+            `<tr>
+                <td colspan="13">
+                    No Complaints Found
+                </td>
+            </tr>`;
+
+        }
+
+        data.forEach(c => {
+
+            let evidenceHTML = "No File";
+
+            if(c.evidence){
+
+                let fileURL =
+                "http://localhost:3000/uploads/"
+                + c.evidence;
+
+                let lower =
+                c.evidence.toLowerCase();
+
+                /* IMAGE */
+
+                if(
+                    lower.endsWith(".png") ||
+                    lower.endsWith(".jpg") ||
+                    lower.endsWith(".jpeg")
+                ){
+
+                    evidenceHTML = `
+                    <img
+                    src="${fileURL}"
+                    width="80"
+                    style="cursor:pointer;border-radius:5px;"
+                    onclick="window.open('${fileURL}')"
+                    >
+                    `;
+
+                }
+
+                /* OTHER FILES */
+
+                else{
+
+                    evidenceHTML = `
+                    <a href="${fileURL}" target="_blank">
+                    View File
+                    </a>
+                    `;
+
+                }
+
+            }
+
+            rows += `
+
+            <tr>
+
+            <td>${c.complaint_date || ""}</td>
+
+            <td>${c.user_id || ""}</td>
+
+            <td>${c.complaint_id || ""}</td>
+
+            <td>${c.type || ""}</td>
+
+            <td>${c.date || ""}</td>
+
+            <td>${c.time || ""}</td>
+
+            <td>${c.location || ""}</td>
+
+            <td>${c.description || ""}</td>
+
+            <td>${evidenceHTML}</td>
+
+            <td>${c.status || "Pending"}</td>
+
+            <td>${c.investigator_id || "Not Assigned"}</td>
+
+            <td>
+
+            <button
+            class="assign-btn"
+            onclick="assignComplaint('${c.complaint_id}')">
+
+            Assign
+
+            </button>
+
+            </td>
+
+            <td>
+
+            <button
+            onclick="deleteCase('${c.complaint_id}')">
+
+            Delete
+
+            </button>
+
+            </td>
+
+            </tr>
+
+            `;
+
+        });
+
+        document.getElementById("table").innerHTML = rows;
+
+    })
+
+    .catch(err => {
+
+        console.log(err);
+
+        document.getElementById("table").innerHTML =
+
+        `<tr>
+            <td colspan="13">
+            Error Loading Complaints
+            </td>
+        </tr>`;
+
+    });
+
+}
+
+/* FILTER */
+function applyFilters(){
+
+    let date =
+    document.getElementById("filterDate").value;
+
+    let type =
+    document.getElementById("filterType").value;
+
+    let year =
+    document.getElementById("filterYear").value;
+
+    let month =
+    document.getElementById("filterMonth").value;
+
+    let status =
+    document.getElementById("filterStatus").value;
+
+    let assign =
+    document.getElementById("filterAssign").value;
+
+    let user =
+    document.getElementById("filterUser").value;
+
+    /* BUILD QUERY */
+
+    let query =
+    "?date=" + encodeURIComponent(date) +
+    "&type=" + encodeURIComponent(type) +
+    "&year=" + encodeURIComponent(year) +
+    "&month=" + encodeURIComponent(month) +
+    "&status=" + encodeURIComponent(status) +
+    "&assign=" + encodeURIComponent(assign) +
+    "&user=" + encodeURIComponent(user);
+
+    fetch(
+
+        "http://localhost:3000/filterComplaints" + query,
+
+        {
+
+            method:"GET",
+
+            headers:{
+                "Authorization":"Bearer " + token
+            }
+
+        }
+
+    )
+
+    .then(async res => {
+
+        if(!res.ok){
+
+            let err = await res.json();
+
+            throw new Error(err.message);
+
+        }
+
+        return res.json();
+
+    })
+
+    .then(data => {
+
+        console.log("FILTER DATA:", data);
+
+        let rows = "";
+
+        /* NO RESULTS */
+
+        if(data.length === 0){
+
+            rows = `
+            <tr>
+                <td colspan="13">
+                    No Results Found
+                </td>
+            </tr>
+            `;
+
+            document.getElementById("table").innerHTML = rows;
+
+            return;
+
+        }
+
+        /* SHOW DATA */
+
+        data.forEach(c => {
+
+            let evidenceHTML = "No File";
+
+            if(c.evidence){
+
+                let fileURL =
+                "http://localhost:3000/uploads/" +
+                c.evidence;
+
+                let lower =
+                c.evidence.toLowerCase();
+
+                /* IMAGE */
+
+                if(
+
+                    lower.endsWith(".png") ||
+
+                    lower.endsWith(".jpg") ||
+
+                    lower.endsWith(".jpeg")
+
+                ){
+
+                    evidenceHTML = `
+
+                    <img
+                    src="${fileURL}"
+                    width="80"
+                    style="
+                    border-radius:5px;
+                    cursor:pointer;
+                    "
+                    onclick="window.open('${fileURL}')"
+                    >
+
+                    `;
+
+                }
+
+                /* OTHER FILE */
+
+                else{
+
+                    evidenceHTML = `
+
+                    <a href="${fileURL}" target="_blank">
+
+                    View File
+
+                    </a>
+
+                    `;
+
+                }
+
+            }
+
+            rows += `
+
+            <tr>
+
+                <td>${c.complaint_date || ""}</td>
+
+                <td>${c.user_id || ""}</td>
+
+                <td>${c.complaint_id || ""}</td>
+
+                <td>${c.type || ""}</td>
+
+                <td>${c.date || ""}</td>
+
+                <td>${c.time || ""}</td>
+
+                <td>${c.location || ""}</td>
+
+                <td>${c.description || ""}</td>
+
+                <td>${evidenceHTML}</td>
+
+                <td>${c.status || "Pending"}</td>
+
+                <td>${c.investigator_id || "Not Assigned"}</td>
+
+                <td>
+
+                    <button
+                    class="assign-btn"
+                    onclick="assignComplaint('${c.complaint_id}')">
+
+                    Assign
+
+                    </button>
+
+                </td>
+
+                <td>
+
+                    <button
+                    onclick="deleteCase('${c.complaint_id}')">
+
+                    Delete
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+            `;
+
+        });
+
+        document.getElementById("table").innerHTML = rows;
+
+    })
+
+    .catch(err => {
+
+        console.log("FILTER ERROR:", err);
+
+        document.getElementById("table").innerHTML = `
+
+        <tr>
+
+            <td colspan="13">
+
+                Error Loading Filtered Complaints
+
+            </td>
+
+        </tr>
+
+        `;
+
+    });
+
+}
+/* YEAR DROPDOWN */
+document.addEventListener("DOMContentLoaded", function(){
+
+    let yearSelect =
+    document.getElementById("filterYear");
+
+    for(let y = 2026; y >= 2001; y--){
+
+        yearSelect.innerHTML +=
+        `<option value="${y}">${y}</option>`;
+
+    }
+
+});
+
+/* ASSIGN */
+function assignComplaint(cid){
+
+    window.location.href =
+    "admin_Assign_complaints.html?cid=" + cid;
+
+}
+
+/* DELETE */
+function deleteCase(complaint_id){
+
+    if(!confirm("Delete this complaint?")){
+        return;
+    }
+
+    fetch("http://localhost:3000/deleteComplaint",{
+
+        method:"POST",
+
+        headers:{
+
+            "Content-Type":"application/json",
+
+            "Authorization":"Bearer " + token
+
+        },
+
+        body: JSON.stringify({
+
+            complaint_id: complaint_id
+
+        })
+
+    })
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        if(data.success){
+
+            alert("Complaint Deleted");
+
+            loadComplaints();
+
+        }
+
+        else{
+
+            alert("Delete Failed");
+
+        }
+
+    });
+
+}
+
+</script>
+
+</head>
+
+<body onload="loadComplaints()">
+<div id="imgModal" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.8);
+text-align:center;
+">
+
+<span onclick="closeModal()" style="
+position:absolute;
+top:20px;
+right:30px;
+color:white;
+font-size:30px;
+cursor:pointer;
+">&times;</span>
+
+<img id="modalImg" style="
+margin-top:5%;
+max-width:80%;
+max-height:80%;
+border:5px solid white;
+">
+
+
+</div>
+
+<h1>Users Complaint</h1>
+<br>
+<div class="filter-bar">
+
+<input type="date" id="filterDate" placeholder="Complaint ID">
+
+<select id="filterType">
+    <option value="">All Types</option>
+    <option value="Phishing">Phishing</option>
+    <option value="Online Fraud">Online Fraud</option>
+    <option value="Social Media Hacking">Social Media Hacking</option>
+    <option value="Identity Theft">Identity Theft</option>
+    <option value="Cyberbullying">Cyberbullying</option>
+    <option value="Online Harassment">Online Harassment</option>
+    <option value="Fake Website">Fake Website</option>
+    <option value="UPI Fraud">UPI Fraud</option>
+</select>
+
+<select id="filterYear">
+    <option value="">Year</option>
+</select>
+
+<select id="filterMonth">
+    <option value="">Month</option>
+    <option value="01">Jan</option>
+    <option value="02">Feb</option>
+    <option value="03">Mar</option>
+    <option value="04">Apr</option>
+    <option value="05">May</option>
+    <option value="06">Jun</option>
+    <option value="07">Jul</option>
+    <option value="08">Aug</option>
+    <option value="09">Sep</option>
+    <option value="10">Oct</option>
+    <option value="11">Nov</option>
+    <option value="12">Dec</option>
+</select>
+
+<select id="filterStatus">
+    <option value="">All Status</option>
+    <option value="Pending">Pending</option>
+    <option value="In Progress">In Progress</option>
+    <option value="Resolved">Resolved</option>
+</select>
+
+<select id="filterAssign">
+    <option value="">All</option>
+    <option value="assigned">Assigned</option>
+    <option value="not_assigned">Not Assigned</option>
+</select>
+
+<input type="text" id="filterUser" placeholder="User ID">
+
+<button onclick="applyFilters()">Filter</button>
+
+</div>
+<div class="table-container">
+
+
+<table>
+<tr>
+<th>Complaint Date</th>
+<th>User</th>
+<th>Complaint ID</th>
+<th>Type</th>
+<th>Date</th>
+<th>Time</th>
+<th>Location(URL,Website link,)</th>
+<th>Description</th>
+<th>Evidence</th>
+<th>Status</th>
+<th>Investigator ID</th>
+<th>Assign</th>
+<th>Delete</th>
+
+</tr>
+
+<tbody id="table"></tbody>
+
+</table>
+</div>
+
+
+</body>
+</html>

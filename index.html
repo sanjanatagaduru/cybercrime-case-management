@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cybercrime Case Management Portal</title>
+
+
+<style>
+    
+
+body{
+    font-family: Arial, sans-serif;
+    background-image: url('https://images.unsplash.com/photo-1563986768609-322da13575f3');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    margin: 0;
+    text-align: center;
+    color: white;
+    zoom:50%;
+}
+.container{
+    width:85%;
+    margin:auto;
+    transform: scale(0.90);
+    transform-origin: top center;
+    animation: zoomInOut 4s infinite alternate;
+}
+
+
+
+nav{
+    background: rgba(0,0,128,0.9);
+    padding: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    position: sticky;
+    top: 0;
+}
+
+
+nav a{
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+nav a:hover{
+    background-color: white;
+    color: navy;
+}
+
+
+.dropdown{
+    position: relative;
+}
+
+.dropdown-content{
+    display: none;
+    position: absolute;
+    background-color: navy;
+    top: 40px;
+    min-width: 180px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+}
+
+.dropdown-content a{
+    display: block;
+    padding: 12px;
+    text-align: left;
+}
+
+.dropdown-content a:hover{
+    background-color: white;
+    color: navy;
+}
+
+.dropdown:hover .dropdown-content{
+    display: block;
+}
+
+
+header{
+    background: linear-gradient(to right, rgba(0,0,128,0.9), rgba(0,0,80,0.8));
+    color:white;
+    padding:50px;
+    font-size:45px;
+    font-weight:bold;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 8px black;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+
+.form-section{
+    padding:60px 20px;
+}
+
+
+h2{
+    font-size: 32px;
+    margin-bottom: 25px;
+    text-shadow: 2px 2px 5px black;
+}
+
+
+form{
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    width: 420px;
+    margin:auto;
+    padding:45px;
+    border-radius:15px;
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    color: white;
+}
+
+
+input[type="radio"]{
+    transform: scale(1.3);
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+
+form br{
+    margin-bottom: 15px;
+}
+
+
+input[type="submit"]{
+    padding:12px 28px;
+    background: linear-gradient(to right, navy, darkblue);
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:18px;
+    font-weight:bold;
+    transition: 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+input[type="submit"]:hover{
+    transform: scale(1.05);
+    background: linear-gradient(to right, darkblue, blue);
+}
+
+
+@media screen and (max-width: 600px){
+
+    nav{
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    form{
+        width: 85%;
+        padding: 30px;
+    }
+
+    header{
+        font-size: 32px;
+        padding: 35px;
+    }
+
+    h2{
+        font-size: 26px;
+    }
+}
+
+</style>
+
+
+<script>
+
+function goToPage(){
+    var role = document.querySelector('input[name="role"]:checked');
+
+    if(role == null){
+        alert("Please select a role");
+        return false;
+    }
+
+    if(role.value == "user"){
+        window.location.href = "user_registration.html";
+    }
+    else if(role.value == "investigator"){
+        window.location.href = "Investigator_login_page.html";
+    }
+    else if(role.value == "admin"){
+        window.location.href = "admin_login.html";
+    }
+}
+
+function goHome(){
+    let username = prompt("Enter Username:");
+    let password = prompt("Enter Password:");
+
+    if(username == "admin" && password == "Admin@12"){
+        alert("Login Successful! Redirecting to Dashboard...");
+        window.location.href = "dashboard.html"; 
+    }
+    else{
+        alert("Invalid Login!");
+    }
+}
+
+</script>
+
+</head>
+
+<body>
+
+
+<header>Cybercrime Case Management Portal</header>
+<nav>
+
+<a onclick="goHome()">Home</a>
+
+
+<a href="login.html">User Login</a>
+<a href="track_status.html">Track Complaint</a>
+
+<a href="CyberCrime Awareness.html">Awareness</a>
+
+<a href="contact.html">Contact</a>
+<a href="feedback.html">Feedback</a>
+
+</nav>
+
+
+
+<div class="form-section">
+
+<h2>Select Your Role</h2>
+
+<form onsubmit="goToPage(); return false;">
+
+<input type="radio" name="role" value="user"> User/Citizen <br><br>
+
+<input type="radio" name="role" value="investigator"> Investigator <br><br>
+
+<input type="radio" name="role" value="admin"> Admin <br><br>
+
+<input type="submit" value="Continue">
+
+</form>
+
+
+</div>
+<footer style="background-color:rgba(0,0,128,0.8); color:white; padding:12px; position:fixed; bottom:0; width:100%; font-size:16px;">
+
+© 2026 Cybercrime Case Management Portal | All Rights Reserved
+
+</footer>
+
+</body>
+</html>

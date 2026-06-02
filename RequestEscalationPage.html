@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Request Case Escalation</title>
+
+<style>
+body{
+font-family: Arial;
+background:#f4f4f4;
+margin:0;
+}
+
+header{
+background:navy;
+color:black;
+padding:15px;
+text-align:center;
+font-size:22px;
+}
+
+.container{
+width:400px;
+margin:auto;
+margin-top:50px;
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0px 4px 10px rgba(0,0,0,0.2);
+}
+
+h2{
+text-align:center;
+}
+
+label{
+font-weight:bold;
+}
+
+input, textarea, select{
+width:100%;
+padding:10px;
+margin-top:5px;
+margin-bottom:15px;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+button{
+width:100%;
+padding:12px;
+background:navy;
+color:white;
+border:none;
+border-radius:5px;
+font-size:15px;
+cursor:pointer;
+}
+
+button:hover{
+background:navy;
+}
+
+.back-link{
+display:block;
+text-align:center;
+margin-top:20px;
+text-decoration:none;
+color:white;
+font-weight:bold;
+}
+a{
+    display:inline-block;
+    margin-top:20px;
+    padding:10px 20px;
+    background:darkblue;
+    color:black;
+    text-decoration:none;
+}
+
+</style>
+
+<script>
+
+//  AUTO-FILL ON PAGE LOAD
+window.onload = function(){
+
+    let complaint_id = localStorage.getItem("esc_complaint_id");
+    let investigator_id = localStorage.getItem("investigator_id");
+
+    console.log("Auto Fill:", complaint_id, investigator_id);
+
+    if(!complaint_id || !investigator_id){
+        alert("Missing data. Go back and login again.");
+        window.location.href = "InvestigatorAssignedCases.html";
+        return;
+    }
+
+    document.getElementById("complaint_id").value = complaint_id;
+    document.getElementById("investigator_id").value = investigator_id;
+};
+
+
+//SEND ESCALATION
+function sendEscalation(event){
+    event.preventDefault();
+let token =
+localStorage.getItem("token");
+    let complaint_id = document.getElementById("complaint_id").value;
+    let investigator_id = document.getElementById("investigator_id").value;
+    let reason = document.getElementById("reason").value;
+    let type = document.getElementById("type").value;
+
+    if(!reason){
+        alert("Please enter reason");
+        return;
+    }
+
+    fetch("http://localhost:3000/escalateCase", {
+        method: "POST",
+        headers: {"Content-Type":"application/json",
+         "Authorization":"Bearer " + token},
+        body: JSON.stringify({
+            complaint_id: complaint_id,
+            investigator_id: investigator_id,
+            reason: reason,
+            type: type
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.success){
+            alert("Escalation sent to Admin ");
+            window.location.href = "InvestigatorAssignedCases.html";
+        } else {
+            alert("Failed ");
+        }
+
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Server error");
+    });
+}
+
+</script>
+
+</head>
+
+<body>
+
+<header>Cybercrime Case Management Portal</header>
+
+<div class="container">
+
+<h2>Request Case Escalation</h2>
+
+<form onsubmit="sendEscalation(event)">
+
+<label>Complaint ID:</label>
+<input type="text" id="complaint_id" readonly>
+
+<label>Investigator ID:</label>
+<input type="text" id="investigator_id" readonly>
+
+<label>Reason for Escalation:</label>
+<textarea id="reason" required></textarea>
+
+<label>Select Escalation Type:</label>
+<select id="type" required>
+<option>High Financial Fraud</option>
+<option>Interstate Cybercrime</option>
+<option>Organized Cybercrime</option>
+<option>Requires Cyber Forensics Team</option>
+<option>Requires Senior Investigation</option>
+</select>
+
+<button type="submit">Send Escalation Request</button>
+
+</form>
+
+<a href="InvestigatorAssignedCases.html" class="back-link">
+Back to Assigned Cases
+</a>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Assign Investigator</title>
+
+<style>
+
+/* ---------- PAGE ---------- */
+body{
+    font-family: Arial;
+    background:#f4f6f9;
+    text-align:center;
+}
+
+/* ---------- HEADING ---------- */
+h2{
+    color:navy;
+    margin-top:20px;
+}
+
+/* ---------- TABLE ---------- */
+table{
+    width:90%;
+    margin:auto;
+    border-collapse:collapse;
+    background:white;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* HEADER */
+th{
+    background:navy;
+    color:white;
+    padding:12px;
+}
+
+/* CELLS */
+td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+}
+
+/* ROW HOVER */
+tr:hover{
+    background:#f1f1f1;
+}
+
+/* ---------- ASSIGN BUTTON ---------- */
+.assign-btn{
+    background:green;
+    color:white;
+    border:none;
+    padding:6px 12px;
+    cursor:pointer;
+    border-radius:5px;
+    transition:0.3s;
+}
+
+.assign-btn:hover{
+    background:darkgreen;
+}
+
+/* ---------- TOTAL CASES ---------- */
+.total-cases{
+    font-weight:bold;
+    color:navy;
+    background:#eaf0ff;
+    border-radius:5px;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width:768px){
+    table{
+        font-size:12px;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Assign Complaints to Investigators</h2>
+
+<table>
+<tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Designation</th>
+    <th>Type</th>
+    <th>Expertise</th>
+    <th>Assign</th>
+    <th>Total Cases</th>
+</tr>
+
+<tbody id="tableBody"></tbody>
+</table>
+
+<script>
+let token = localStorage.getItem("token");
+
+/* ---------- CHECK LOGIN ---------- */
+
+if(!token){
+
+    alert("Please Login First");
+
+    window.location.href = "admin_login.html";
+
+}
+
+fetch("http://localhost:3000/getInvestigators",{
+    headers:{
+        "Authorization":"Bearer " + token
+    }
+})
+
+.then(res => res.json())
+.then(data => {
+
+    let table = document.getElementById("tableBody");
+
+    data.forEach(inv => {
+       fetch(
+`http://localhost:3000/getInvestigatorCaseCount?id=${inv.investigator_id}`,
+{
+    headers:{
+        
+        "Authorization":"Bearer " + token
+    }
+}
+)
+        .then(res => res.json())
+        .then(caseData => {
+        
+
+        let row = `
+        <tr>
+            <td>${inv.investigator_id}</td>
+            <td>${inv.name}</td>
+            <td>${inv.designation}</td>
+            <td>${inv.type}</td>
+            <td>${inv.expertise}</td>
+
+            <td>
+                <button class="assign-btn" onclick="assignCase('${inv.investigator_id}')">
+                    Assign
+                </button>
+            </td>
+
+            <td class="total-cases" id="count_${inv.investigator_id}">
+            ${caseData.totalCases ||0}
+           </td>
+        </tr>`;
+
+        table.innerHTML += row;
+    });
+
+});
+});
+/* ---------- ASSIGN FUNCTION ---------- */
+function assignCase(id){
+    alert("Assigned to Investigator: " + id);
+
+    // increase count (frontend only for now)
+    let cell = document.getElementById("count_" + id);
+    let count = parseInt(cell.innerText);
+    cell.innerText = count + 1;
+}
+window.assignCase = function(investigator_id){
+
+let complaint_id = new URLSearchParams(window.location.search).get("cid");
+
+if(!complaint_id){
+    alert("Complaint ID not found in URL");
+    return;
+}
+
+fetch("http://localhost:3000/assignComplaint", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "Authorization":"Bearer " + token
+    },
+    body: JSON.stringify({
+        complaint_id: complaint_id,
+        investigator_id: investigator_id
+    })
+})
+.then(res => res.json())
+.then(data => {
+
+alert(data.message);
+
+// redirect after assignment
+
+
+})
+.catch(err => {
+    console.error(err);
+    alert("Assignment failed");
+});
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Complaint Status</title>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f2f2f2;
+    text-align:center;
+}
+
+h1{
+    color:darkblue;
+    margin-top:30px;
+}
+
+input{
+    padding:10px;
+    width:250px;
+    margin:10px;
+}
+
+button{
+    padding:10px 15px;
+    background:darkblue;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+table{
+    margin:auto;
+    border-collapse:collapse;
+    width:80%;
+    background:white;
+}
+
+th{
+    background:darkblue;
+    color:white;
+    padding:10px;
+}
+
+td{
+    padding:10px;
+    border:1px solid #ddd;
+}
+
+tr:hover{
+    background:#f5f5f5;
+}
+
+a{
+    display:inline-block;
+    margin-top:20px;
+    padding:10px 20px;
+    background:darkblue;
+    color:white;
+    text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Cybercrime Case Management Portal</h1>
+<h2>Check Complaint Status</h2>
+
+<!-- INPUT BOX -->
+<input type="text" id="complaint_id" placeholder="Enter Complaint ID">
+<button onclick="searchComplaint()">Verify</button>
+
+<br><br>
+
+<table>
+<thead>
+<tr>
+    <th>User ID</th>
+    <th>Complaint ID</th>
+    <th>Complaint Date</th>
+    <th>Type</th>
+    <th>Status</th>
+    <th>Assigned Investigator</th>
+</tr>
+</thead>
+
+<tbody id="result"></tbody>
+</table>
+
+<br>
+<a href="user_dashboard.html">Back to Dashboard</a>
+
+<script>
+function searchComplaint(){
+
+    let id = document.getElementById("complaint_id").value.trim();
+
+    if(!id){
+        alert("Enter Complaint ID");
+        return;
+    }
+
+    // STEP 1: VERIFY ID FIRST
+    fetch(`http://localhost:3000/verifyComplaintId?id=${id}`)
+    .then(res => res.json())
+    .then(check => {
+
+        if(!check.valid){
+            alert("Invalid Complaint ID ");
+            document.getElementById("result").innerHTML = "";
+            return;
+        }
+
+        // STEP 2: IF VALID → FETCH DETAILS
+        fetch(`http://localhost:3000/getComplaintStatus?id=${id}`)
+        .then(res => res.json())
+        .then(data => {
+
+            let table = document.getElementById("result");
+            table.innerHTML = "";
+
+            if(!data){
+                table.innerHTML = "<tr><td colspan='6'>No complaint found</td></tr>";
+                return;
+            }
+
+            table.innerHTML = `
+            <tr>
+                <td>${data.user_id}</td>
+                <td>${data.complaint_id}</td>
+                <td>${data.complaint_date}</td>
+                <td>${data.type}</td>
+                <td>${data.status}</td>
+                <td>${data.investigator_id}</td>
+            </tr>
+            `;
+
+        });
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>

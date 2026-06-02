@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mobile OTP Test</title>
+
+<style>
+
+html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:auto;
+}
+
+body{
+    font-family: Arial;
+    text-align:center;
+
+    background:
+    linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+    url("https://tse3.mm.bing.net/th/id/OIP.lbKCHke9GxMYf0q4tK4xGAHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3");
+
+    background-size:cover;
+    background-position:center;
+
+    zoom:60%;
+}
+
+
+/* Heading */
+
+h1{
+    color:white;
+    margin-top:20px;
+    font-size:40px;
+}
+
+h2{
+    color:white;
+    font-size:28px;
+}
+
+
+/* Main Form */
+
+form{
+    background-color:rgba(255,255,255,0.15);
+    width:650px;
+    margin:auto;
+    padding:40px;
+    border-radius:15px;
+    color:white;
+    border:2px solid white;
+}
+
+
+/* Input Fields */
+
+input, select{
+    width:80%;
+    padding:12px;
+    border:none;
+    border-radius:5px;
+    font-size:16px;
+}
+
+
+/* Buttons */
+
+input[type="submit"],
+input[type="button"],
+button{
+
+    background-color:navy;
+    color:white;
+    padding:10px 18px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+input[type="submit"]:hover,
+input[type="button"]:hover,
+button:hover{
+
+    background-color:green;
+}
+
+
+/* OTP Box */
+
+.box{
+    background-color:rgba(0,0,0,0.3);
+    padding:20px;
+    border-radius:10px;
+    margin-top:20px;
+}
+
+
+/* Password Rules */
+
+.password-rules{
+    list-style:none;
+    padding:0;
+    text-align:left;
+    width:350px;
+    margin:auto;
+    color:white;
+}
+
+.password-rules li{
+    padding:5px;
+}
+
+
+/* Messages */
+
+.warning{
+    color:#ff8080;
+    font-size:14px;
+}
+
+.example{
+    color:lightgreen;
+    font-weight:bold;
+}
+
+
+/* CAPTCHA Section */
+
+#captchaText{
+    background:white;
+    color:black;
+    width:150px;
+    margin:auto;
+    padding:10px;
+    font-size:22px;
+    letter-spacing:3px;
+    border-radius:5px;
+}
+
+
+/* Generated ID */
+
+#generatedID{
+    color:yellow;
+    font-size:22px;
+    font-weight:bold;
+}
+
+
+/* Responsive Layout */
+
+@media screen and (max-width:700px){
+
+    form{
+        width:90%;
+        padding:20px;
+    }
+
+    input, select{
+        width:90%;
+    }
+
+    h1{
+        font-size:28px;
+    }
+
+    h2{
+        font-size:22px;
+    }
+}
+
+</style>
+
+<script>
+
+let mobileVerified = false;
+let emailVerified = false;
+function sendOTP(){
+
+let mobile = document.getElementById("mobile").value;
+
+console.log("Sending mobile:", mobile); // debug
+
+fetch("http://localhost:3000/sendOTP", {
+method: "POST",
+headers: {"Content-Type":"application/json"},
+body: JSON.stringify({mobile: mobile})
+})
+.then(res => res.json())
+.then(data => {
+alert("OTP sent! Check server terminal");
+});
+
+}
+
+function verifyOTP(){
+
+let mobile = document.getElementById("mobile").value;
+let otp = document.getElementById("otp").value;
+
+fetch("http://localhost:3000/verifyMobileOTP", {
+method: "POST",
+headers: {"Content-Type":"application/json"},
+body: JSON.stringify({mobile: mobile, otp: otp})
+})
+.then(res => res.json())
+.then(data => {
+
+if(data.success){
+mobileVerified = true;
+
+alert("OTP Verified");
+}else{
+alert(" Wrong OTP");
+}
+
+});
+
+}
+function sendemailOTP(){
+
+let email = document.getElementById("email").value;
+
+console.log("Sending Email:", email); // debug
+
+fetch("http://localhost:3000/sendemailOTP", {
+method: "POST",
+headers: {"Content-Type":"application/json"},
+body: JSON.stringify({email: email})
+})
+.then(res => res.json())
+.then(data => {
+alert("OTP sent! Check server terminal");
+});
+
+}
+function verifyemailOTP(){
+
+let email = document.getElementById("email").value;
+let otp = document.getElementById("emailOtp").value;
+
+fetch("http://localhost:3000/verifyemailOTP", {
+method: "POST",
+headers: {"Content-Type":"application/json"},
+body: JSON.stringify({email: email, otp: otp})
+})
+.then(res => res.json())
+.then(data => {
+
+if(data.success){
+emailVerified = true;
+alert(" OTP Verified");
+}else{
+alert(" Wrong OTP");
+}
+
+});
+
+}
+
+function checkPassword(){
+    
+  
+
+let password = document.getElementById("password").value.trim();
+let confirmPassword = document.getElementById("confirmPassword").value.trim();
+let msg = document.getElementById("msg");
+let regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%&*])[A-Za-z\d@#$%&*]{8,}$/;
+
+
+
+// If password not entered
+if(password === ""){
+    document.getElementById("msg").innerHTML = "Password is required ";
+    return false;
+}
+if(!regex.test(password)){
+        msg.innerHTML = "Password must be 8+ chars with A-Z, a-z, 0-9, special (@#$%&*)";
+        return false;
+}
+
+//  If confirm password not entered
+if(confirmPassword === ""){
+    document.getElementById("msg").innerHTML = "Confirm Password is required ";
+    return false;
+}
+
+//  If not matching
+if(password !== confirmPassword){
+    document.getElementById("msg").innerHTML = "Passwords do not match ";
+    return false;
+}
+msg.style.color = "green";
+msg.innerHTML = "Password verified ";
+return true;
+
+//  Only if everything is correct
+document.getElementById("msg").innerHTML = "Verified Successfully ";
+return true;
+
+// continue registration / OTP here
+}
+
+let captcha = "";
+
+function generateCaptcha(){
+
+let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+captcha = "";
+
+for(let i = 0; i < 5; i++){
+    captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+}
+
+document.getElementById("captchaText").innerHTML = captcha;
+}
+
+function validateCaptcha(){
+
+let userInput = document.getElementById("captchaInput").value.trim();
+
+if(userInput === ""){
+    document.getElementById("msg").innerHTML = "Enter CAPTCHA ";
+    return;
+}
+
+if(userInput !== captcha){
+    document.getElementById("msg").innerHTML = "Wrong CAPTCHA ";
+    generateCaptcha(); // new captcha
+    return;
+}
+else{document.getElementById("msg1").innerHTML = "CAPTCHA Verified ";}
+
+
+
+// continue form submission
+}
+
+function registerUser(event){ 
+    event.preventDefault();
+    let name = document.querySelector('[name="fullname"]').value.trim();
+    let mobile = document.getElementById("mobile").value;
+    let email = document.getElementById("email").value;
+    let state = document.querySelector('[name="state"]').value;
+    let city = document.querySelector('[name="city"]').value;
+    let captchaInput = document.getElementById("captchaInput").value;
+
+    /* --- Required fields --- */
+    if(name==="" || email==="" || mobile===""){
+        alert("Fill all required fields");
+        return;
+    }
+
+    /* --- Mobile check --- */
+    if(!/^[0-9]{10}$/.test(mobile)){
+        alert("Invalid mobile number");
+        return;
+    }
+
+    /* --- Email check --- */
+    let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(email)){
+        alert("Invalid email");
+        return;
+    }
+
+    /* --- Password --- */
+    if(!checkPassword()) return;
+
+    /* --- OTP --- */
+    if(!mobileVerified){
+        alert("Verify mobile OTP");
+        return;
+    }
+
+    if(!emailVerified){
+        alert("Verify email OTP");
+        return;
+    }
+
+    /* --- CAPTCHA --- */
+    if(captchaInput !== captcha){
+        alert("Wrong CAPTCHA");
+        generateCaptcha();
+        return;
+    }
+
+    /* --- Terms --- */
+    if(!document.getElementById("agree").checked){
+        alert("Accept Terms & Conditions");
+        return;
+    } 
+
+    var randomNumber = Math.floor(Math.random()*10000);
+    var userID = "USR" + randomNumber; 
+    fetch("http://localhost:3000/checkUserID", {
+    method:"POST",
+    headers:{
+        "Content-Type":"application/json"
+    },
+    body: JSON.stringify({user_id:userID})
+})
+.then(res => res.json())
+.then(data => {
+
+    // if exists generate again
+    if(data.exists){
+
+        alert("User ID already exists. Generating again...");
+        registerUser(event);
+        return;
+    }
+    
+    var password = document.querySelector('input[name="password"]').value;
+
+    localStorage.setItem("userID", userID); 
+
+    alert("Your User ID is: " + userID);
+
+    //  Show ID
+    document.getElementById("generatedID").innerHTML = "Registration Successful! Your User ID is: " + userID; 
+    
+
+    //  Send to backend
+   fetch("http://localhost:3000/registerUser", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        user_id: userID,
+        fullname: document.querySelector('[name="fullname"]').value,
+        email: document.querySelector('[name="email"]').value,
+        mobile: document.querySelector('[name="mobile"]').value,
+        password: password,
+        state: document.querySelector('[name="state"]').value,
+        city: document.querySelector('[name="city"]').value,
+        gender: document.querySelector('[name="gender"]').value,
+        dob: document.querySelector('[name="dob"]').value
+    })
+})
+.then(res => {
+    if(!res.ok){
+        throw new Error("Server error");
+    }
+    return res.text();
+})
+.then(msg => {
+    console.log("Server response:", msg);
+})
+.catch(err => {
+    console.error("Error:", err);
+    alert("Not sent to backend!");
+});
+});
+if(!checkPassword()){
+    alert("Fix password errors before submitting");
+    return;
+}
+}
+
+
+function goToLogin() { 
+    window.location.href = "login.html"; 
+}
+
+
+
+
+</script>
+
+</head>
+
+<body onload="generateCaptcha()">
+<h1>Cybercrime Case Management Portal</h1>
+
+
+<h2>User Registration /Login </h2>
+
+<form onsubmit="registerUser(event)">
+
+<label>Full Name</label><br>
+<input type="text" name="fullname" id="n1" required ><br><br>
+
+
+
+<div class="box">
+
+<h2>Mobile OTP Verification</h2>
+
+<input type="text" id="mobile" placeholder="Enter Mobile" name="mobile" required><br>
+
+<button type="button" onclick="sendOTP()"  id="b" >Send OTP</button>
+
+<br><br>
+
+<input type="text" id="otp" placeholder="Enter OTP" required><br>
+
+<button type="button" onclick="verifyOTP()" >Verify OTP</button>
+
+<h2>Email OTP Verification</h2>
+
+<!-- Email input -->
+<input type="text" id="email" placeholder="Enter Email" name="email" required ><br>
+
+<button type="button" onclick="sendemailOTP()">Send OTP</button>
+
+<br><br>
+
+<!-- Email OTP input -->
+<input type="text" id="emailOtp" placeholder="Enter OTP" required><br>
+
+<button type="button" onclick="verifyemailOTP()">Verify OTP</button>
+
+</div>
+<label>Password</label><br>
+<input type="password" id="password" name="password" required><br><br>
+<ul class="password-rules">
+    <li> Minimum 8 characters</li>
+    <li> Uppercase & lowercase letters</li>
+    <li> At least 1 number</li>
+    <li>Special character (@#$%&*)</li>
+    <li> No spaces allowed</li>
+    <li> Must match confirm password</li>
+</ul>
+
+<p class="warning">Avoid weak passwords like "12345678" or "password"</p>
+<p class="example">Example: Cyber@123</p>
+
+<label>Confirm Password</label><br>
+<input type="password" name="confirm_password" id="confirmPassword"  required><br>
+
+<button type="button"  onclick="checkPassword()" >verify</button><br><br>
+<p id="msg"></p>
+
+<label>State</label><br>
+<input type="text" name="state" required><br><br>
+
+<label>City</label><br>
+<input type="text" name="city" required><br><br>
+
+<label>Gender</label><br>
+<select name="gender">
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
+</select><br><br>
+
+<label>Date of Birth</label><br>
+<input type="date" name="dob" required><br><br>
+<div style="width:300px; margin:auto; text-align:left;">
+<div>
+    <p id="captchaText" style="font-weight:bold;"></p>
+
+    <input type="text" id="captchaInput" placeholder="Enter CAPTCHA" required><br><br>
+
+    <button type="button" onclick="generateCaptcha()">Refresh</button><br>
+</div>
+
+<br>
+
+<button type="button" onclick="validateCaptcha()">Submit</button><br>
+
+<p id="msg1"></p>
+
+<p style="font-size:14px;">
+I confirm that the information provided is true and correct.  
+If any complaint is found to be false or misleading, necessary action may be taken.
+</p>
+
+<label>
+<input type="checkbox" id="agree" required><br>
+ I agree to the Terms and Conditions
+</label>
+
+<br><br>
+
+<p id="msg"></p>
+
+</div>
+
+<input type="submit" value="Submit">
+<br><br>
+
+<input type="button" value="Login" onclick="goToLogin()">
+
+</form>
+
+<br><br>
+
+<p id="generatedID" style="color:darkblue; font-weight:bold;"></p>
+
+</body>
+</html>

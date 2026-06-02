@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Investigator Profile Update</title>
+
+<style>
+
+body{
+font-family: Arial;
+background-color:#f2f2f2;
+text-align:center;
+}
+
+h1{
+color:navy;
+margin-top:30px;
+}
+
+form{
+background:white;
+width:400px;
+margin:auto;
+padding:20px;
+border:1px solid rgb(255, 245, 245);
+text-align:left;
+}
+
+input{
+width:95%;
+padding:6px;
+margin-top:5px;
+}
+
+button{
+background:navy;
+color:white;
+padding:8px 15px;
+border:none;
+margin-top:10px;
+cursor:pointer;
+}
+
+button:hover{
+background:darkblue;
+}
+
+a{
+    display:inline-block;
+    margin-top:20px;
+    padding:10px 20px;
+    background:darkblue;
+    color:white;
+    text-decoration:none;
+}
+
+</style>
+
+<script>
+
+let verifiedEmail = "";
+
+// SEND OTP
+function sendOTP(){
+
+    let email = document.getElementById("email").value;
+
+    fetch("http://localhost:3000/sendInvEmailOTP", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({email})
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        alert(data.message);
+    });
+
+}
+
+// VERIFY OTP
+function verifyOTP(){
+
+    let email = document.getElementById("email").value;
+    let otp = document.getElementById("otp").value;
+
+    fetch("http://localhost:3000/verifyemailOTP", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({email, otp})
+    })
+    .then(res=>res.json())
+    .then(data=>{
+
+        if(data.success){
+
+            alert("OTP Verified ");
+            verifiedEmail = email;
+
+            // 🔹 FETCH DATA
+            fetch("http://localhost:3000/getInvByEmail?email=" + email)
+            .then(res=>res.json())
+            .then(user=>{
+
+                document.getElementById("inv_id").value = user.investigator_id;
+                document.getElementById("name").value = user.name;
+                document.getElementById("mobile").value = user.mobile;
+
+                // ENABLE EDIT
+                document.getElementById("mobile").disabled = false;
+                document.getElementById("password").disabled = false;
+                document.getElementById("confirm").disabled = false;
+                document.getElementById("updateBtn").disabled = false;
+
+            });
+
+        } else {
+            alert("Invalid OTP ");
+        }
+
+    });
+
+}
+
+// 🔹 UPDATE PROFILE
+function updateProfile(){
+
+    let mobile = document.getElementById("mobile").value;
+    let password = document.getElementById("password").value;
+    let confirm = document.getElementById("confirm").value;
+
+    if(password !== confirm){
+        alert("Passwords do not match ");
+        return;
+    }
+
+    fetch("http://localhost:3000/updateInvProfile", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+            email: verifiedEmail,
+            mobile,
+            password
+        })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        alert(data.message);
+    });
+
+}
+
+</script>
+</head>
+
+<body>
+
+<h2>Investigator Profile Update</h2>
+
+<form onsubmit="event.preventDefault(); updateProfile();">
+
+<label>Email</label>
+<input type="email" id="email" required>
+
+<button type="button" onclick="sendOTP()">Send OTP</button>
+
+<br><br>
+
+<input type="text" id="otp" placeholder="Enter OTP">
+<button type="button" onclick="verifyOTP()">Verify OTP</button>
+
+<br><br>
+
+<label>Investigator ID</label>
+<input type="text" id="inv_id" disabled>
+
+<label>Name</label>
+<input type="text" id="name" disabled>
+
+<label>Mobile</label>
+<input type="text" id="mobile" disabled>
+
+<label>New Password</label>
+<input type="password" id="password" disabled>
+
+<label>Confirm Password</label>
+<input type="password" id="confirm" disabled>
+
+<button id="updateBtn" disabled>Update Profile</button>
+
+</form>
+
+
+
+<a href="InvestigatorDashboard.html">Back to Dashboard</a>
+
+</body>
+</html>

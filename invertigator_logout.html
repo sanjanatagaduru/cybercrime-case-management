@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Logout</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    background:#f4f4f4;
+    text-align:center;
+    margin:0;
+}
+
+header{
+    background:navy;
+    color:white;
+    padding:15px;
+    font-size:22px;
+}
+
+.container{
+    background:white;
+    width:350px;
+    margin:auto;
+    margin-top:100px;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0px 4px 10px rgba(0,0,0,0.2);
+}
+
+button{
+    padding:10px 15px;
+    margin:10px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.logout-btn{
+    background:navy;
+    color:white;
+}
+
+.logout-btn:hover{
+    background:red;
+}
+
+.cancel-btn{
+    background:navy;
+    color:white;
+}
+
+.cancel-btn:hover{
+    background:navy;
+}
+
+</style>
+
+<script>
+
+/* =========================
+   SECURE LOGOUT
+========================= */
+
+async function logoutUser(){
+
+    let confirmLogout =
+    confirm("Do you really want to logout?");
+
+    if(confirmLogout == false){
+        return;
+    }
+
+    /* GET TOKEN */
+
+    let token =
+    localStorage.getItem("token");
+
+    if(!token){
+
+        alert("Session Expired");
+
+        window.location.href =
+        "index.html";
+
+        return;
+    }
+
+    /* API URL */
+
+    let apiURL = "";
+
+    /* CHECK ROLE */
+
+    if(localStorage.getItem("admin_id")){
+
+        apiURL =
+        "http://localhost:3000/adminLogout";
+
+    }
+
+    else if(localStorage.getItem("investigator_id")){
+
+        apiURL =
+        "http://localhost:3000/investigatorLogout";
+
+    }
+
+    else{
+
+        apiURL =
+        "http://localhost:3000/userLogout";
+
+    }
+
+    try{
+
+        /* BACKEND LOGOUT */
+
+        let response = await fetch(apiURL, {
+
+            method:"POST",
+
+            headers:{
+                "Authorization":
+                "Bearer " + token
+            }
+
+        });
+
+        let data =
+        await response.json();
+
+        alert(data.message);
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        alert("Server Error");
+
+    }
+
+    /* CLEAR STORAGE */
+
+    localStorage.removeItem("token");
+
+    localStorage.removeItem("user_id");
+
+    localStorage.removeItem("investigator_id");
+
+    localStorage.removeItem("admin_id");
+
+    sessionStorage.clear();
+
+    /* REDIRECT */
+
+    window.location.href =
+    "index.html";
+}
+
+/* =========================
+   RETURN TO DASHBOARD
+========================= */
+
+function returnDashboard(){
+
+    if(localStorage.getItem("admin_id")){
+
+        window.location.href =
+        "AdminDashboard.html";
+
+    }
+
+    else if(localStorage.getItem("investigator_id")){
+
+        window.location.href =
+        "InvestigatorDashboard.html";
+
+    }
+
+    else{
+
+        window.location.href =
+        "user_dashboard.html";
+
+    }
+}
+
+/* =========================
+   SESSION CHECK
+========================= */
+
+window.onload = function(){
+
+    let token =
+    localStorage.getItem("token");
+
+    if(!token){
+
+        alert("Session Expired");
+
+        window.location.href =
+        "index.html";
+    }
+
+}
+
+</script>
+
+</head>
+
+<body>
+
+<header>
+Cybercrime Case Management Portal
+</header>
+
+<div class="container">
+
+<h2>Logout</h2>
+
+<p>
+Are you sure you want to log out of the system?
+</p>
+
+<br>
+
+<button class="logout-btn"
+onclick="logoutUser()">
+Yes, Logout
+</button>
+
+<br>
+
+<button class="cancel-btn"
+onclick="returnDashboard()">
+No, Return to Dashboard
+</button>
+
+</div>
+
+</body>
+
+</html>

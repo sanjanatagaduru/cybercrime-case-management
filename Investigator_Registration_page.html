@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Investigator Registration</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    text-align: center;
+}
+
+h1{
+    color: darkblue;
+    margin-top: 30px;
+}
+
+h2{
+    color: black;
+}
+
+form{
+    background-color: white;
+    width: 320px; /* reduced from 400px */
+    margin: auto;
+    padding: 25px;
+    border: 1px solid gray;
+}
+input, select{
+    width: 90%;
+    padding: 6px;
+    margin-bottom: 10px;
+}
+
+input[type="submit"], input[type="button"]{
+    background-color: darkblue;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover,
+input[type="button"]:hover{
+    background-color: navy;
+}
+
+a{
+    text-decoration: none;
+    color: darkblue;
+    margin-top: 15px;
+    display: inline-block;
+}
+
+a:hover{
+    text-decoration: underline;
+}
+
+#message{
+    color: darkred;
+    font-weight: bold;
+    margin-top: 10px;
+}
+.loginBtn {
+    background-color: green;       /* different color for login */
+    color: white;
+    border: none;
+    padding: 6px 12px;             /* smaller height and width */
+    cursor: pointer;
+    margin-top: 10px;
+    width: 150px;                   /* reduced length */
+    font-size: 14px;                /* smaller text */
+}
+
+.loginBtn:hover {
+    background-color: darkgreen;    /* hover effect */
+}
+</style>
+
+<script>
+function loginInvestigator(event){
+    event.preventDefault();
+
+    let investigatorID = document.getElementById("inv_id").value;
+    let password = document.getElementById("password").value;
+
+    fetch("http://localhost:3000/investigatorLogin", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            investigator_id: investigatorID,
+            password: password
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.status === "success"){
+            alert("Login Successful");
+
+            // redirect to dashboard
+            window.location.href = "dashboard.html";
+
+        } else {
+            alert(data.message);
+        }
+
+    })
+    .catch(err => {
+        console.log(err);
+        alert("Server error");
+    });
+}
+//  LOGIN PAGE REDIRECT
+function goToLogin() { 
+    window.location.href = "Investigator_login_page.html"; 
+}
+</script>
+
+</head>
+
+<body>
+
+<h1>Cybercrime Case Management Portal</h1>
+
+<h2>Investigator Registration</h2>
+
+<form onsubmit="registerInvestigator(event)">
+    <label>Investigator ID:</label><br>
+    <input type="text" name="investigator_id" placeholder="Enter Investigator ID" required><br>
+
+    <label>Investigator Name:</label><br>
+    <input type="text" name="investigator_name" placeholder="Enter Investigator Name" required><br>
+
+    <label>Email Address:</label><br>
+    <input type="email" name="email" placeholder="Enter Email Address" required><br>
+
+    <label>Mobile Number:</label><br>
+    <input type="tel" name="mobile" placeholder="Enter Mobile Number" required><br>
+
+    <label>Password:</label><br>
+    <input type="password" name="password" placeholder="Enter Password" required><br>
+
+    <input type="submit" value="Register">
+</form>
+
+<!-- Login button -->
+<input type="button" value="Login" class="loginBtn" onclick="goToLogin()">
+
+<p id="message"></p>
+
+<br>
+<a href="index.html">Back to Home Page</a>
+
+</body>
+</html>

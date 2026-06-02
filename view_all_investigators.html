@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin - Investigators</title>
+
+<style>
+body{
+    font-family: Arial;
+    background: #f2f2f2;
+    text-align: center;
+}
+
+select{
+    padding: 5px;
+    margin: 10px;
+}
+
+table{
+    margin: auto;
+    border-collapse: collapse;
+    width: 90%;
+    background: white;
+}
+
+th, td{
+    border: 1px solid gray;
+    padding: 8px;
+}
+
+th{
+    background: darkblue;
+    color: white;
+}
+button{
+    color:White;
+    background-color: navy;
+
+}
+</style>
+
+<script>
+    let token = localStorage.getItem("token");
+
+/* ---------- CHECK LOGIN ---------- */
+
+if(!token){
+
+    alert("Please Login First");
+
+    window.location.href = "admin_login.html";
+
+}
+
+function loadInvestigators(){
+
+    
+    let type = document.getElementById("typeFilter").value;
+    let expertise = document.querySelector('input[name="expertise"]:checked');
+
+    let url = "http://localhost:3000/getInvestigatorsBas?";
+
+    let params = [];
+
+    if(type !== "all"){
+        params.push("type=" + encodeURIComponent(type));
+    }
+
+    if(expertise){
+        params.push("expertise=" + encodeURIComponent(expertise.value));
+    }
+
+    url += params.join("&");
+
+    fetch(url, {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        let table = document.getElementById("tableBody");
+        table.innerHTML = "";
+
+        data.forEach(inv => {
+
+            table.innerHTML += `
+            <tr>
+                <td>${inv.investigator_id}</td>
+                <td>${inv.name}</td>
+                <td>${inv.designation}</td>
+                <td>${inv.type}</td>
+                <td>${inv.expertise || "-"}</td>
+                <td>${inv.email || "-"}</td>
+                <td>${inv.mobile || "-"}</td>
+
+                <!-- TOTAL ASSIGNED -->
+                <td>${inv.total_assigned}</td>
+
+                <!-- VIEW BUTTON -->
+                <td>
+                    <button onclick="viewCases('${inv.investigator_id}')">
+                        View
+                    </button>
+                </td>
+            </tr>
+            `;
+        });
+
+    });
+}
+function viewCases(investigator_id){
+
+    // store selected investigator
+    localStorage.setItem("selected_investigator", investigator_id);
+
+    // redirect to complaint page
+    window.location.href = "admin_view _compliant.html?investigator_id=" + investigator_id;
+}
+function getInvestigatorFilter(){
+
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("investigator_id");
+}
+let investigator_id = getInvestigatorFilter();
+
+let url = "http://localhost:3000/allComplaints";
+
+if(investigator_id){
+    url = "http://localhost:3000/myComplaints?id=" + investigator_id;
+}
+// load all on start
+window.onload = loadInvestigators;
+
+</script>
+
+</head>
+
+<body>
+
+<h2>Investigator Details</h2>
+
+<!-- TYPE FILTER -->
+<select id="typeFilter" onchange="loadInvestigators()">
+    <option value="all">All Investigators</option>
+    <option value="normal">Normal Investigator</option>
+    <option value="specialized">Specialized Investigator</option>
+</select>
+
+<!--  EXPERTISE FILTER -->
+<br>
+
+<label><input type="radio" name="expertise" value="Phishing" onchange="loadInvestigators()"> Phishing</label>
+<label><input type="radio" name="expertise" value="Online Fraud" onchange="loadInvestigators()"> Online Fraud</label>
+<label><input type="radio" name="expertise" value="Social Media Hacking" onchange="loadInvestigators()"> Social Media Hacking</label>
+<label><input type="radio" name="expertise" value="Identity Theft" onchange="loadInvestigators()"> Identity Theft</label>
+<label><input type="radio" name="expertise" value="Cyberbullying" onchange="loadInvestigators()"> Cyberbullying</label>
+<label><input type="radio" name="expertise" value="Online Harassment" onchange="loadInvestigators()"> Online Harassment</label>
+<label><input type="radio" name="expertise" value="Fake Website" onchange="loadInvestigators()"> Fake Website</label>
+<label><input type="radio" name="expertise" value="UPI Fraud" onchange="loadInvestigators()"> UPI Fraud</label>
+
+<br><br>
+
+<!--  TABLE -->
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Designation</th>
+            <th>Type</th>
+            <th>Expertise</th>
+            <th>Email</th>
+            <th>Mobile</th>
+            <th>Total Assigned</th>
+        <th>View</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+</table>
+
+</body>
+</html>

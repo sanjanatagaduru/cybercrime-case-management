@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Investigator Dashboard</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    color: navy;
+    margin-top: 30px;
+}
+
+h2 {
+    color: darkblue;
+}
+
+h3 {
+    color: black;
+    margin-bottom: 15px;
+}
+
+#dashboardBox {
+    background-color: white;
+    width: 360px;
+    margin: auto;
+    padding: 25px;
+    border: 1px solid gray;
+    text-align: center;
+    margin-top: 20px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin: 12px 0;
+}
+
+a {
+    text-decoration: none;
+    color: white;
+    background-color: navy;
+    padding: 8px 18px;
+    display: inline-block;
+    border-radius: 4px;
+}
+
+a:hover {
+    background-color: darkblue;
+}
+
+hr {
+    margin: 20px 0;
+}
+
+p {
+    margin: 10px 0;
+    color: #333;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>Cybercrime Case Management Portal</h1>
+<h2>Investigator Dashboard</h2>
+
+<div id="dashboardBox">
+
+<p>Welcome Investigator <b id="inv_id"></b></p>
+
+<hr>
+
+<h3>Investigation Options</h3>
+
+<ul>
+    <li>
+        <a href="InvestigatorAssignedCases.html">View Assigned Complaints</a>
+    </li>
+    <li>
+        <a href="view_case_statics.html">View Case Statistics</a>
+    </li>
+
+    <li>
+        <a href="investigator_update_profile.html">Update Profile</a>
+    </li>
+
+    <li>
+        <a href="invertigator_logout.html">Logout</a>
+    </li>
+</ul>
+
+<hr>
+
+<p>Cybercrime Investigation Management System</p>
+
+</div>
+
+<script>
+// Display logged-in Investigator ID
+var investigatorID = localStorage.getItem("inv_id");
+if(investigatorID){
+    document.getElementById("investigatorIDDisplay").innerHTML =inv_id ;
+}
+</script>
+
+</body>
+</html>

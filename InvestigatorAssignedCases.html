@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Assigned Complaints</title>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f2f2f2;
+    text-align:center;
+}
+
+table{
+    width:95%;
+    margin:auto;
+    border-collapse:collapse;
+    background:white;
+}
+
+th,td{
+    border:1px solid gray;
+    padding:10px;
+}
+
+th{
+    background:navy;
+    color:white;
+}
+
+img{
+    width:80px;
+    cursor:pointer;
+}
+
+button{
+    background:navy;
+    color:white;
+    border:none;
+    padding:5px 10px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Assigned Complaints</h2>
+
+<table>
+<thead>
+<tr>
+    <th>Complaint Date</th>
+    <th>User ID</th>
+    <th>Complaint ID</th>
+    <th>Type</th>
+    <th>Date</th>
+    <th>Time</th>
+    <th>Location</th>
+    <th>Description</th>
+    <th>Evidence</th>
+    <th>Status</th>
+    <th>Action</th>
+    <th>Escalate</th>
+    
+</tr>
+</thead>
+
+<tbody id="table"></tbody>
+</table>
+
+<script>
+
+let investigator_id = localStorage.getItem("investigator_id");
+let token =
+localStorage.getItem("token");
+
+console.log("Investigator ID:", investigator_id);
+
+if(!investigator_id){
+    alert("Please login first");
+    window.location.href = "Investigator_login_page.html";
+}
+
+// ================= LOAD COMPLAINTS =================
+function loadComplaints(){
+
+fetch(`http://localhost:3000/myComplaints?id=${investigator_id}`,
+{
+    headers:{
+        "Authorization":"Bearer " + token
+    }
+}
+)
+.then(res => res.json())
+.then(data => {
+
+let table = document.getElementById("table");
+table.innerHTML = "";
+
+if(!data || data.length === 0){
+    table.innerHTML = "<tr><td colspan='11'>No assigned complaints</td></tr>";
+    return;
+}
+
+data.forEach(c => {
+
+let evidenceHTML = "No Evidence";
+
+if(c.evidence){
+
+    let file = "http://localhost:3000/uploads/" + c.evidence;
+
+    if(c.evidence.endsWith(".png") ||
+       c.evidence.endsWith(".jpg") ||
+       c.evidence.endsWith(".jpeg")){
+
+        evidenceHTML = `<img src="${file}" onclick="window.open(this.src)">`;
+
+    } else {
+        evidenceHTML = `<a href="${file}" target="_blank">View File</a>`;
+    }
+}
+
+// DELETE BUTTON
+
+
+// ESCALATE BUTTON
+let escalateBtn = `
+    <button onclick="escalateCase('${c.complaint_id}')">
+        Escalate
+    </button>
+`;
+
+if(c.is_escalated == 1){
+    escalateBtn = `<span style="color:green;font-weight:bold;">✔ Escalated</span>`;
+}
+
+table.innerHTML += `
+<tr id="row-${c.complaint_id}">
+<td>${c.complaint_date}</td>
+<td>${c.user_id}</td>
+<td>${c.complaint_id}</td>
+<td>${c.type}</td>
+<td>${c.date}</td>
+<td>${c.time}</td>
+<td>${c.location}</td>
+<td>${c.description}</td>
+<td>${evidenceHTML}</td>
+
+<td>
+    <select id="status-${c.complaint_id}">
+        <option value="Pending" ${c.status === "Pending" ? "selected" : ""}>Pending</option>
+        <option value="In Progress" ${c.status === "In Progress" ? "selected" : ""}>In Progress</option>
+        <option value="Resolved" ${c.status === "Resolved" ? "selected" : ""}>Resolved</option>
+    </select>
+</td>
+
+<td>
+    <button onclick="updateStatus('${c.complaint_id}')">Update</button>
+</td>
+
+<td>${escalateBtn}</td>
+
+
+</tr>
+`;
+
+});
+
+})
+.catch(err => {
+    console.error("Error loading complaints:", err);
+});
+}
+
+// ================= UPDATE STATUS =================
+function updateStatus(complaint_id){
+
+    let select = document.getElementById(`status-${complaint_id}`);
+    let newStatus = select.value;
+
+    fetch("http://localhost:3000/updateStatus", {
+        method: "POST",
+        headers: {"Content-Type":"application/json",
+             "Authorization":"Bearer " + token
+        },
+        body: JSON.stringify({
+            complaint_id: complaint_id,
+            status: newStatus
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.success){
+            alert("Status Updated Successfully");
+            loadComplaints();
+        } else {
+            alert("Update Failed");
+        }
+
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Server Error");
+    });
+}
+
+// ================= DELETE =================
+
+
+// ================= ESCALATE =================
+function escalateCase(complaint_id){
+
+    localStorage.setItem("esc_complaint_id", complaint_id);
+    window.location.href = "RequestEscalationPage.html";
+}
+
+// ================= INIT =================
+loadComplaints();
+
+</script>
+
+</body>
+</html>

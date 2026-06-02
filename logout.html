@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Secure Logout</title>
+
+<style>
+body{
+    font-family: Arial;
+    background-color: #f2f2f2;
+    margin: 0;
+    text-align: center;
+}
+
+header{
+    background-color: #0a3d62;
+    color: white;
+    padding: 18px;
+    font-size: 24px;
+}
+
+.container{
+    width: 400px;
+    background: white;
+    margin: auto;
+    margin-top: 100px;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+}
+
+button{
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px;
+    font-size: 15px;
+}
+
+.logout-btn{
+    background-color: #dc3545;
+    color: white;
+}
+
+.cancel-btn{
+    background-color: #198754;
+    color: white;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+Cybercrime Case Management Portal
+</header>
+
+<div class="container">
+
+<h2>Logout</h2>
+
+<p>Are you sure you want to logout from the system?</p>
+
+<button class="logout-btn" onclick="logout()">Yes, Logout</button>
+<br>
+<button class="cancel-btn" onclick="goBack()">No, Go Back</button>
+
+</div>
+
+<script>
+
+async function logout() {
+
+    let confirmBox = confirm("Do you really want to logout?");
+    if (!confirmBox) return;
+
+    let token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Session Expired / Invalid Token");
+        window.location = "index.html";
+        return;
+    }
+
+    let apiURL = "";
+
+    if (localStorage.getItem("admin_id")) {
+        apiURL = "http://localhost:3000/adminLogout";
+    } 
+    else if (localStorage.getItem("investigator_id")) {
+        apiURL = "http://localhost:3000/investigatorLogout";
+    } 
+    else {
+        apiURL = "http://localhost:3000/userLogout";
+    }
+
+    try {
+
+        let response = await fetch(apiURL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+
+        if (!response.ok) {
+            alert("Invalid or expired token");
+        } else {
+            let data = await response.json();
+            alert(data.message);
+        }
+
+    } catch (error) {
+        alert("Server Error");
+    }
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+    window.location = "index.html";
+}
+
+function goBack() {
+
+    if (localStorage.getItem("admin_id")) {
+        window.location = "AdminDashboard.html";
+    } 
+    else if (localStorage.getItem("investigator_id")) {
+        window.location = "InvestigatorDashboard.html";
+    } 
+    else {
+        window.location = "user_dashboard.html";
+    }
+}
+
+window.onload = function () {
+    let token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Unauthorized Access");
+        window.location = "index.html";
+    }
+};
+
+</script>
+
+</body>
+</html>

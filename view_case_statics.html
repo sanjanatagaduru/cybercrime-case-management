@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Investigator Case Statistics</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    background:#f4f6f9;
+    text-align:center;
+}
+
+h1{
+    color:navy;
+    margin-top:20px;
+}
+
+.stats-container{
+    width:90%;
+    margin:auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+    margin-top:30px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.card h2{
+    color:navy;
+    margin-bottom:10px;
+}
+
+.card p{
+    font-size:28px;
+    font-weight:bold;
+    color:#333;
+}
+
+table{
+    width:90%;
+    margin:30px auto;
+    border-collapse:collapse;
+    background:white;
+}
+
+th{
+    background:navy;
+    color:white;
+    padding:12px;
+}
+
+td{
+    border:1px solid #ddd;
+    padding:10px;
+}
+
+tr:nth-child(even){
+    background:#f2f2f2;
+}
+
+a{
+    text-decoration:none;
+    background:navy;
+    color:white;
+    padding:10px 18px;
+    border-radius:5px;
+}
+
+a:hover{
+    background:darkblue;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Investigator Case Statistics</h1>
+
+<!-- SUMMARY CARDS -->
+<div class="stats-container">
+
+    <div class="card">
+        <h2>Total Cases</h2>
+        <p id="totalCases">0</p>
+    </div>
+
+    <div class="card">
+        <h2>Pending Cases</h2>
+        <p id="pendingCases">0</p>
+    </div>
+
+    <div class="card">
+        <h2>In Progress</h2>
+        <p id="progressCases">0</p>
+    </div>
+
+    <div class="card">
+        <h2>Resolved Cases</h2>
+        <p id="resolvedCases">0</p>
+    </div>
+
+    <div class="card">
+        <h2>Escalated Cases</h2>
+        <p id="escalatedCases">0</p>
+    </div>
+
+</div>
+
+<!-- CASE TYPE TABLE -->
+<h2>Case Type Statistics</h2>
+
+<table>
+
+<tr>
+    <th>Case Type</th>
+    <th>Total Cases</th>
+</tr>
+
+<tbody id="caseTypeTable"></tbody>
+
+</table>
+
+<br>
+
+<a href="InvestigatorDashboard.html">
+Back to Dashboard
+</a>
+
+<script>
+    let token = localStorage.getItem("token");
+
+/* investigator logged in */
+let investigator_id =
+localStorage.getItem("investigator_id");
+
+/* LOAD STATISTICS */
+fetch("http://localhost:3000/investigatorStatistics?id="
++ investigator_id,
+{
+    headers:{
+        "Authorization":"Bearer " + token
+    }
+})
+
+
+.then(res => res.json())
+
+.then(data => {
+
+    document.getElementById("totalCases").innerText =
+    data.total;
+
+    document.getElementById("pendingCases").innerText =
+    data.pending;
+
+    document.getElementById("progressCases").innerText =
+    data.progress;
+
+    document.getElementById("resolvedCases").innerText =
+    data.resolved;
+
+    document.getElementById("escalatedCases").innerText =
+    data.escalated;
+
+    /* CASE TYPES */
+    let rows = "";
+
+    data.caseTypes.forEach(c => {
+
+        rows += `
+        <tr>
+            <td>${c.type}</td>
+            <td>${c.total}</td>
+        </tr>
+        `;
+
+    });
+
+    document.getElementById("caseTypeTable").innerHTML =
+    rows;
+
+});
+
+</script>
+
+</body>
+</html>

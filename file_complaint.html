@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>File Cybercrime Complaint</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+
+body{
+font-family: Arial;
+background:#f2f2f2;
+text-align:center;
+}
+
+h1{
+color:rgb(6, 6, 6);
+}
+h2{
+    color:rgb(7, 7, 7);
+}
+form{
+background:white;
+width:450px;
+margin:auto;
+padding:25px;
+border:1px solid gray;
+text-align:left;
+}
+
+input, select, textarea{
+width:100%;
+padding:6px;
+margin-top:5px;
+}
+
+button{
+background:navy;
+color:white;
+padding:8px 15px;
+border:none;
+margin-top:10px;
+cursor:pointer;
+}
+
+button:hover{
+background:darkblue;
+}
+
+</style>
+
+<script>
+let evidenceHash = "No Evidence Uploaded";
+
+if(file){
+
+    evidenceHash =
+    btoa(file.name + file.size + Date.now());
+
+}
+
+function generateComplaint(){
+
+event.preventDefault(); // stop refresh
+
+let userID = document.getElementById("userid").value;
+let crime = document.getElementById("crime").value;
+let complaintdate = document.getElementById("complaintdate").value;
+let date = document.getElementById("date").value;
+let time = document.getElementById("time").value;
+let location = document.getElementById("location").value;
+let description = document.getElementById("description").value;
+let file = document.getElementById("file").files[0];
+
+if(userID=="" || crime=="" || complaintdate=="" || date==""){
+    alert("Please fill required details");
+    return;
+}
+if(file){
+
+    let maxSize = 5 * 1024 * 1024;
+
+    if(file.size > maxSize){
+        alert("File size should be less than 5 MB");
+        return;
+    }
+
+}
+
+// Generate Complaint ID
+var complaintID="CMP"+Math.floor(Math.random()*100000);
+var today=new Date().toLocaleDateString();
+
+// Show in form
+document.getElementById("cid").value=complaintID;
+
+
+//  POP-UP (like registration)
+alert("Your Complaint ID is: " + complaintID);
+
+// LOCAL STORAGE (same as before)
+let complaint={
+userID:userID,
+complaintID:complaintID,
+crime:crime,
+complaintdate:complaintdate,
+date:date,
+time:time,
+location:location,
+description:description,
+status:"Pending",
+evidenceHash:evidenceHash
+};
+
+// SAVE LOCAL
+
+
+localStorage.setItem("complaint_"+complaintID,JSON.stringify(complaint));
+
+//  SEND TO BACKEND
+let formData = new FormData();
+
+formData.append("complaint_date", complaintdate);
+formData.append("user_id", userID);
+formData.append("complaint_id", complaintID);
+formData.append("type", crime);
+formData.append("date", date);
+formData.append("time", time);
+formData.append("location", location);
+formData.append("description", description);
+
+
+if(file){
+    formData.append("evidence", file);
+}
+
+
+fetch("http://localhost:3000/addComplaint", {
+    method: "POST",
+    body: formData
+})
+.then(res => res.json())   // FIXED
+.then(data => {
+
+    alert(data.message || "Complaint Submitted Successfully!");
+
+    // Auto download complaint
+    downloadComplaintPDF();
+
+})
+.catch(err => {
+    console.error(err);
+    alert("Error submitting complaint!");
+});
+
+}
+
+function downloadComplaintPDF(){
+
+const { jsPDF } = window.jspdf;
+
+var cid = document.getElementById("cid").value;
+
+if(cid==""){
+    alert("Submit complaint first");
+    return;
+}
+
+var data = localStorage.getItem("complaint_"+cid);
+
+if(data == null){
+    alert("Complaint not found");
+    return;
+}
+
+var obj = JSON.parse(data);
+
+const doc = new jsPDF();
+
+doc.setFontSize(18);
+doc.text("CYBERCRIME COMPLAINT REPORT", 20, 20);
+
+doc.setFontSize(12);
+
+doc.text("Complaint Date : " + obj.complaintdate, 20, 40);
+doc.text("User ID : " + obj.userID, 20, 50);
+doc.text("Complaint ID : " + obj.complaintID, 20, 60);
+doc.text("Crime Type : " + obj.crime, 20, 70);
+doc.text("Incident Date : " + obj.date, 20, 80);
+doc.text("Incident Time : " + obj.time, 20, 90);
+doc.text("Location : " + obj.location, 20, 100);
+
+doc.text("Description :", 20, 115);
+
+let splitDescription = doc.splitTextToSize(obj.description, 160);
+
+doc.text(splitDescription, 20, 125);
+
+doc.text("Status : " + obj.status, 20, 170);
+
+doc.text("Evidence Hash :", 20, 185);
+
+let hashText = doc.splitTextToSize(obj.evidenceHash || "No Evidence Uploaded", 160);
+
+doc.text(hashText, 20, 195);
+
+doc.save("Complaint_" + cid + ".pdf");
+
+}
+
+
+</script>
+
+
+</head>
+
+<body>
+
+<h1>Cybercrime Case Management Portal</h1>
+
+<h2>File a Complaint</h2>
+
+<form>
+
+<label>Date of Complaint</label>
+<input type="date" id="complaintdate" required>
+
+<h2>User Verification</h2>
+
+<label>User ID</label>
+<input type="text" id="userid" placeholder="Enter your User ID" required>
+
+<h3>Complaint Details</h3>
+
+<label>Type of Cybercrime</label>
+
+<select id="crime">
+<option value="">--Select Crime Type--</option>
+<option>Phishing</option>
+<option>Online Fraud</option>
+<option>Social Media Hacking</option>
+<option>Identity Theft</option>
+<option>Cyberbullying</option>
+<option>Online Harassment</option>
+<option>Fake Website</option>
+<option>UPI Fraud</option>
+</select>
+
+<br><br>
+
+<br><br>
+<label> Date of Incident</label>
+<input type="date" id="date">
+<br><br>
+
+<label>Time of Incident</label>
+<input type="time" id="time">
+
+<br><br>
+
+<label>Location (Website / Transaction ID / Platform)</label>
+<input type="text" id="location">
+
+<br><br>
+
+<label>Description</label>
+<textarea id="description" rows="5" required></textarea>
+<br>
+
+
+<br><br>
+<h3>Evidence</h3>
+<small>
+Allowed File Types: JPG, PNG, PDF, DOC, DOCX <br>
+Maximum File Size: 5 MB
+</small>
+<br><br>
+
+<label>Do you have evidence?</label><br>
+
+<input type="radio" name="evidence"> Yes<br>
+<input type="radio" name="evidence"> No
+
+<br><br>
+
+<label>Upload Evidence</label>
+
+<input 
+type="file" 
+id="file" 
+name="evidence" 
+accept="image/*,.pdf,.doc,.docx,.mp4"
+>
+
+
+
+<br><br>
+<h3>System Generated Details</h3>
+
+<label>Complaint ID</label>
+<input type="text" id="cid" placeholder="Generated after submission" readonly>
+
+
+
+<br><br>
+
+<label>Assigned Investigator</label>
+<input type="text" placeholder="Assigned by Admin" readonly>
+
+<br><br>
+
+<button type="button" onclick="generateComplaint()">Submit Complaint</button>
+
+<button type="button" onclick="downloadComplaintPDF()">Download Complaint</button>
+
+</form>
+
+
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin - View Users</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    background:#f2f2f2;
+    text-align:center;
+}
+
+h1{
+    color:darkblue;
+    margin-top:30px;
+}
+
+table{
+    margin:auto;
+    border-collapse: collapse;
+    width:90%;
+    background:white;
+}
+
+th, td{
+    border:1px solid gray;
+    padding:10px;
+}
+
+th{
+    background:navy;
+    color:white;
+}
+
+tr:nth-child(even){
+    background:#f9f9f9;
+}
+
+tr:hover{
+    background:#e6f2ff;
+}
+button{
+    color:White;
+    background-color: navy;
+
+}
+
+</style>
+
+<script>
+let token = localStorage.getItem("token");
+
+/* ---------- CHECK LOGIN ---------- */
+
+if(!token){
+
+    alert("Please Login First");
+
+    window.location.href = "admin_login.html";
+
+}
+function loadUsers(){
+
+fetch("http://localhost:3000/allUsers",{
+
+headers: {
+
+"Authorization":"Bearer " + token
+
+}
+})
+.then(res => res.json())
+.then(data => {
+
+let rows = "";
+
+// If no users
+if(data.length === 0){
+    rows = "<tr><td colspan='9'>No users found</td></tr>";
+}
+
+// Loop users
+data.forEach(u => {
+
+rows += `
+<tr>
+<td>${u.user_id}</td>
+<td>${u.fullname}</td>
+<td>${u.email}</td>
+<td>${u.mobile}</td>
+<td>${u.state}</td>
+<td>${u.city}</td>
+<td>${u.gender}</td>
+<td>${u.dob}</td>
+
+<td>${u.total_complaints}</td>
+
+<td>
+<button onclick="viewComplaints('${u.user_id}')">
+View
+</button>
+</td>
+</tr>
+`;
+
+});
+
+document.getElementById("tableBody").innerHTML = rows;
+
+})
+.catch(err => {
+    console.log(err);
+});
+
+}
+function viewComplaints(user_id){
+
+    window.location.href =
+    "admin_view _compliant.html?user_id=" + user_id;
+
+}
+
+</script>
+
+</head>
+
+<body onload="loadUsers()">
+
+<h1>Admin Panel</h1>
+<h2>Registered Users</h2>
+
+<table>
+
+<tr>
+<th>User ID</th>
+<th>Name</th>
+<th>Email</th>
+<th>Mobile</th>
+<th>State</th>
+<th>City</th>
+<th>Gender</th>
+<th>DOB</th>
+<th>Total Complaints</th>
+<th>View</th>
+</tr>
+
+<tbody id="tableBody"></tbody>
+
+</table>
+
+</body>
+</html>

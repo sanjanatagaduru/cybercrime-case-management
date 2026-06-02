@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Analytics Dashboard</title>
+
+<style>
+
+/* ================= GENERAL ================= */
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    text-align:center;
+    color:#333;
+}
+
+/* ================= HEADER ================= */
+h1{
+    background: linear-gradient(90deg, navy, #1a237e);
+    color:white;
+    padding:22px;
+    margin:0;
+    font-size:26px;
+    letter-spacing:1px;
+}
+
+/* ================= DASHBOARD GRID ================= */
+.dashboard{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap:20px;
+    padding:30px;
+    max-width:1100px;
+    margin:auto;
+}
+
+/* ================= CARDS ================= */
+.card{
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    transition:0.3s ease;
+}
+
+.card:hover{
+    transform: translateY(-5px);
+}
+
+.card h2{
+    color:navy;
+    font-size:18px;
+    margin-bottom:10px;
+}
+
+.number{
+    font-size:36px;
+    font-weight:bold;
+    color:#d32f2f;
+}
+
+/* ================= RESULT BOX ================= */
+.result-box{
+    background:white;
+    width:320px;
+    margin:25px auto;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.result-box:hover{
+    transform: translateY(-3px);
+}
+
+.result-number{
+    font-size:42px;
+    color:#2e7d32;
+    font-weight:bold;
+}
+
+/* ================= DROPDOWNS ================= */
+select{
+    padding:10px;
+    width:100%;
+    margin-top:10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    outline:none;
+    font-size:14px;
+    cursor:pointer;
+}
+
+select:focus{
+    border-color:navy;
+}
+
+/* ================= TEXT ================= */
+h2{
+    margin-bottom:10px;
+    color:#222;
+}
+
+h3{
+    margin:10px 0;
+    color:#444;
+}
+
+p{
+    margin:5px 0;
+    color:#666;
+    font-size:14px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px){
+    .result-box{
+        width:90%;
+    }
+}
+a{
+    display:inline-block;
+    margin-top:20px;
+    padding:10px 20px;
+    background:darkblue;
+    color:white;
+    text-decoration:none;
+}
+
+</style>
+
+<script>
+let token = localStorage.getItem("token");
+
+/* ---------- CHECK LOGIN ---------- */
+if(!token){
+    alert("Please Login First");
+    window.location.href = "admin_login.html";
+}
+
+function loadAnalytics(){
+fetch("http://localhost:3000/analytics",{
+    headers:{
+        "Authorization":"Bearer " + token
+    }
+})
+.then(res => res.json())
+.then(data => {
+
+document.getElementById("users").innerHTML = data.totalUsers;
+document.getElementById("complaints").innerHTML = data.totalComplaints;
+document.getElementById("investigators").innerHTML = data.totalInvestigators;
+document.getElementById("escalated").innerHTML = data.escalatedCases;
+
+});
+}
+
+function assignmentAnalytics(){
+let type = document.getElementById("assignmentDropdown").value;
+
+fetch("http://localhost:3000/assignmentAnalytics?type=" + type)
+.then(res => res.json())
+.then(data => {
+document.getElementById("assignmentResult").innerHTML = data.total;
+});
+}
+
+function statusAnalytics(){
+let status = document.getElementById("statusDropdown").value;
+
+fetch("http://localhost:3000/statusAnalytics?status=" + status)
+.then(res => res.json())
+.then(data => {
+document.getElementById("statusResult").innerHTML = data.total;
+});
+}
+
+function crimeAnalytics(){
+let type = document.getElementById("crimeDropdown").value;
+
+fetch("http://localhost:3000/crimeAnalytics?type=" + type)
+.then(res => res.json())
+.then(data => {
+document.getElementById("crimeResult").innerHTML = data.total;
+});
+}
+
+function loadMostCrime(){
+fetch("http://localhost:3000/mostCrime")
+.then(res => res.json())
+.then(data => {
+
+document.getElementById("mostCrime").innerHTML = data.type;
+document.getElementById("mostCrimeCount").innerHTML = data.total;
+
+});
+}
+
+</script>
+
+</head>
+
+<body onload="loadAnalytics();loadMostCrime()">
+
+<h1>Admin Analytics Dashboard</h1>
+
+<div class="dashboard">
+
+<div class="card">
+<h2>Total Users</h2>
+<div class="number" id="users">0</div>
+</div>
+
+<div class="card">
+<h2>Total Complaints</h2>
+<div class="number" id="complaints">0</div>
+</div>
+
+<div class="card">
+<h2>Total Investigators</h2>
+<div class="number" id="investigators">0</div>
+</div>
+
+<div class="card">
+<h2>Escalated Cases</h2>
+<div class="number" id="escalated">0</div>
+</div>
+
+</div>
+
+<!-- Assignment -->
+<div class="result-box">
+<h2>Assignment Analytics</h2>
+<select id="assignmentDropdown" onchange="assignmentAnalytics()">
+<option value="">Select</option>
+<option value="assigned">Assigned Cases</option>
+<option value="not_assigned">Not Assigned Cases</option>
+</select>
+<h3>Total Cases</h3>
+<div class="result-number" id="assignmentResult">0</div>
+</div>
+
+<!-- Status -->
+<div class="result-box">
+<h2>Status Analytics</h2>
+<select id="statusDropdown" onchange="statusAnalytics()">
+<option value="">Select Status</option>
+<option value="Pending">Pending</option>
+<option value="Assigned">Assigned</option>
+<option value="In Progress">In Progress</option>
+<option value="Resolved">Resolved</option>
+</select>
+<h3>Total Cases</h3>
+<div class="result-number" id="statusResult">0</div>
+</div>
+
+<!-- Crime -->
+<div class="result-box">
+<h2>Crime Type Analytics</h2>
+<select id="crimeDropdown" onchange="crimeAnalytics()">
+<option value="">Select Crime Type</option>
+<option value="Phishing">Phishing</option>
+<option value="Online Fraud">Online Fraud</option>
+<option value="Social Media Hacking">Social Media Hacking</option>
+<option value="Identity Theft">Identity Theft</option>
+<option value="Cyberbullying">Cyberbullying</option>
+<option value="Online Harassment">Online Harassment</option>
+<option value="Fake Website">Fake Website</option>
+<option value="UPI Fraud">UPI Fraud</option>
+</select>
+<h3>Total Registered Cases</h3>
+<div class="result-number" id="crimeResult">0</div>
+</div>
+
+<!-- Most Crime -->
+<div class="result-box">
+<h2>Most Registered Crime Type</h2>
+<h3 id="mostCrime">Loading...</h3>
+<div class="result-number" id="mostCrimeCount">0</div>
+<p>Total Registered Cases</p>
+</div>
+<a href="admin_dashboard.html">
+Back to Dashboard
+</a>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Track Complaint</title>
+
+<style>
+
+body{
+font-family: Arial;
+background-color:#f2f2f2;
+text-align:center;
+}
+
+h1{
+color:navy;
+margin-top:40px;
+}
+
+form{
+background:white;
+width:350px;
+margin:auto;
+padding:20px;
+border:1px solid gray;
+}
+
+input{
+width:90%;
+padding:6px;
+margin-top:5px;
+}
+
+button{
+background:navy;
+color:white;
+padding:8px 15px;
+border:none;
+margin-top:10px;
+cursor:pointer;
+}
+
+button:hover{
+background:darkblue;
+}
+
+table{
+margin:auto;
+margin-top:30px;
+border-collapse:collapse;
+width:80%;
+background:white;
+}
+
+table,th,td{
+border:1px solid gray;
+padding:8px;
+}
+
+th{
+background:navy;
+color:white;
+}
+
+</style>
+
+<script>
+
+function trackComplaint(){
+
+var cid=document.getElementById("complaintID").value;
+var password=document.getElementById("password").value;
+
+var storedPassword=localStorage.getItem("password");
+
+if(password!==storedPassword)
+{
+alert("Incorrect Password");
+return;
+}
+
+var data=localStorage.getItem("complaint_"+cid);
+
+if(!data)
+{
+alert("Complaint not found");
+return;
+}
+
+var obj=JSON.parse(data);
+
+document.getElementById("statusSection").innerHTML=
+"<table>"+
+"<tr>"+
+"<th>User ID</th>"+
+"<th>Complaint ID</th>"+
+"<th>Complaint Date</th>"+
+"<th>Type of Crime</th>"+
+"<th>Status</th>"+
+"<th>Assigned Investigator</th>"+
+"</tr>"+
+
+"<tr>"+
+"<td>"+obj.userID+"</td>"+
+"<td>"+obj.complaintID+"</td>"+
+"<td>"+obj.date+"</td>"+
+"<td>"+obj.crime+"</td>"+
+"<td>"+obj.status+"</td>"+
+"<td>Not Assigned</td>"+
+"</tr>"+
+"</table>";
+
+}
+
+</script>
+
+</head>
+
+<body>
+
+<h1>Cybercrime Case Management Portal</h1>
+
+<h2>Track Your Complaint</h2>
+
+<form onsubmit="event.preventDefault(); trackComplaint();">
+
+<label>Enter Complaint ID</label><br>
+<input type="text" id="complaintID" placeholder="Enter Complaint ID">
+
+<br><br>
+
+<label>Enter Password</label><br>
+<input type="password" id="password" placeholder="Enter Password">
+
+<br><br>
+
+<button type="submit">Check Status</button>
+
+</form>
+
+<div id="statusSection"></div>
+
+</body>
+</html>

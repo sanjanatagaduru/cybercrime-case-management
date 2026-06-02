@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>User Login</title>
+
+<style>
+
+body{
+
+    font-family: Arial;
+    text-align:center;
+
+    background-image:
+    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    url("https://images.unsplash.com/photo-1510511459019-5dda7724fd87");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+
+    color:white;
+}
+h1{
+color:navy;
+margin-top:40px;
+}
+
+h2{
+color:rgb(255, 255, 255);
+}
+
+form{
+background:white;
+width:320px;
+margin:auto;
+padding:25px;
+border:1px solid gray;
+}
+
+input{
+width:90%;
+padding:7px;
+}
+
+input[type="submit"]{
+background-color:navy;
+color:white;
+border:none;
+padding:8px;
+}
+
+input[type="submit"]:hover{
+background-color:darkblue;
+}
+button{
+    background-color: darkblue;
+    color: white;
+    border: none;
+    padding: 8px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+
+
+</style>
+
+<script>
+
+async function loginUser(event){
+   
+
+event.preventDefault();
+
+let enteredID =
+document.getElementById("userid").value;
+
+let enteredPassword =
+document.getElementById("password").value;
+
+let response = await fetch(
+
+"http://localhost:3000/userLogin",
+
+{
+
+method: "POST",
+
+headers: {
+"Content-Type": "application/json"
+},
+
+body: JSON.stringify({
+
+user_id: enteredID,
+password: enteredPassword
+
+})
+
+}
+
+);
+
+let data = await response.json();
+
+/* SUCCESS */
+
+if(data.token){
+
+localStorage.setItem("token", data.token);
+localStorage.setItem("userID", enteredID);
+alert("Login Successful");
+
+
+window.location.href =
+"user_dashboard.html";
+
+}
+
+/* FAILED */
+
+else{
+
+alert(data.message);
+
+}
+
+}
+
+</script>
+
+</head>
+
+<body>
+
+<h1>Cybercrime Case Management Portal</h1>
+
+<h2>User Login</h2>
+
+<p>You have already been registered. Please log in.</p>
+
+<form onsubmit="loginUser(event)">
+
+<label>Unique User ID</label><br>
+<input type="text" id="userid" placeholder="Enter your User ID" required><br><br>
+
+<label>Password</label><br>
+<input type="password" id="password" placeholder="Enter your Password" required><br><br>
+
+<input type="submit" value="Login">
+
+</form>
+<button onclick="openForgotPassword()" >
+Forgot Password
+</button>
+
+</body>
+</html>
